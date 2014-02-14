@@ -38,6 +38,14 @@ Hit Sphere::intersect(const Ray &ray)
     * intersection point from the ray origin in *t (see example).
     ****************************************************/
 
+	//TODO: of toch niet
+	
+	/* afstand tussen start ray en center
+	 * vector haaks  op ray vector
+	 * hoek tussen afstandslijn haakse vector
+	 * afstand intersect haakste vector en ray (< ? > radius)
+	 * wel of geen hit -> waar? */
+
     // place holder for actual intersection calculation
 
     Vector OC = (position - ray.O).normalized();
