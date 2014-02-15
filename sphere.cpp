@@ -46,14 +46,15 @@ zie ook
 
 
   Vector distance = ray.O - position;
+  Vector direction = ray.D.normalized();
 
-  int discriminant = ray.D.normalized().dot(distance) * ray.D.normalized().dot(distance) - distance.dot(distance) - r*r;
+  int discriminant = direction.dot(distance) * direction.dot(distance) - distance.dot(distance) + r*r;
 
 
   if(discriminant < 0) return Hit::NO_HIT();
   
-  double intersect1 = -(ray.D.normalized().dot(distance)) + sqrt(discriminant);
-  double intersect2 = -(ray.D.normalized().dot(distance)) - sqrt(discriminant);
+  double intersect1 = -(direction.dot(distance)) + sqrt(discriminant);
+  double intersect2 = -(direction.dot(distance)) - sqrt(discriminant);
 
   double t = min(intersect1,intersect2);
 
