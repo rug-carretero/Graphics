@@ -37,23 +37,27 @@ Hit Sphere::intersect(const Ray &ray)
     * Otherwise, return true and place the distance of the
     * intersection point from the ray origin in *t (see example).
     ****************************************************/
-
-	//TODO: of toch niet
-	
-	/* afstand tussen start ray en center
-	 * vector haaks  op ray vector
-	 * hoek tussen afstandslijn haakse vector
-	 * afstand intersect haakste vector en ray (< ? > radius)
-	 * wel of geen hit -> waar? */
+  /*
+zie ook
+    http://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
+  */
 
     // place holder for actual intersection calculation
 
-    Vector OC = (position - ray.O).normalized();
-    if (OC.dot(ray.D) < 0.999) {
-        return Hit::NO_HIT();
-    }
-    double t = 1000;
 
+  Vector distance = ray.O - position;
+
+  int discriminant = ray.D.normalized().dot(distance) * ray.D.normalized().dot(distance) - distance.dot(distance) - r*r;
+
+
+  if(discriminant < 0) return Hit::NO_HIT();
+  
+  double intersect1 = -(ray.D.normalized().dot(distance)) + sqrt(discriminant);
+  double intersect2 = -(ray.D.normalized().dot(distance)) - sqrt(discriminant);
+
+  double t = min(intersect1,intersect2);
+
+   
     /****************************************************
     * RT1.2: NORMAL CALCULATION
     *
