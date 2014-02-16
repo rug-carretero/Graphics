@@ -56,7 +56,7 @@ zie ook
   double intersect1 = -(direction.dot(distance)) + sqrt(discriminant);
   double intersect2 = -(direction.dot(distance)) - sqrt(discriminant);
 
-  double t = min(intersect1,intersect2);
+  double t = (distance.length() < r) ? max(intersect1,intersect2) : min(intersect1,intersect2);
 
    
     /****************************************************
@@ -68,7 +68,8 @@ zie ook
     * Insert calculation of the sphere's normal at the intersection point.
     ****************************************************/
 
-    Vector N /* = ... */;
+  Vector N = (direction * t - position).normalized();
+  if(distance.length() < r) N *= -1;
 
     return Hit(t,N);
 }
