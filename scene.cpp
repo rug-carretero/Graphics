@@ -57,9 +57,29 @@ Color Scene::trace(const Ray &ray)
     *        pow(a,b)           a to the power of b
     ****************************************************/
 
-    Color color = material->color;                  // place holder
+    //see also http://en.wikipedia.org/wiki/Phong_reflection_model
 
-    return color;
+    Color Ia = lights[0]->color;
+
+    for(size_t i = 1; i < lights.size();i++){
+      Ia += lights[i]->color;
+    }
+
+    Color color = material->color;
+
+    Color Il = material->ka * Ia;
+
+    for (size_t i = 0; i < lights.size(); i++){
+      Vector Lm = (lights[i]->position - hit).normalized();
+      Vector Rm = 2* Lm.dot(N) * N - Lm;
+      double diffuse = max(0.0,material->kd * Lm.dot(N));
+      Il +=  diffuse * lights[i]->color;
+      if(diffuse > 0) Il += max(0.0,material->ks * pow(Rm.dot(V),material->n)) * lights[i]->color;
+    }
+
+
+
+    return color * Il;
 }
 
 void Scene::render(Image &img)
