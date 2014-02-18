@@ -73,7 +73,7 @@ Color Scene::trace(const Ray &ray)
 		Vector Lm = (lights[i]->position - hit).normalized();
 		Vector Rm = 2* Lm.dot(N) * N - Lm;
 		double diffuse = material->kd * max(0.0,Lm.dot(N));
-		Il +=  lights[i]->color * material->color * material->ka + diffuse * lights[i]->color;
+		Il +=  diffuse * lights[i]->color;
 		if(diffuse > 0) Il += material->ks * pow(max(0.0,Rm.dot(V)),material->n) * lights[i]->color;
 		/*color *= Lm.dot(N) * lights[i]->color * material->color * material->kd
 			+ lights[i]->color * material->color * material->ka
