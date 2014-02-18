@@ -68,7 +68,7 @@ zie ook
     * Insert calculation of the sphere's normal at the intersection point.
     ****************************************************/
 
-  Vector N = (direction * t - position).normalized();
+  Vector N = (ray.O + direction * t - position).normalized();
   if(distance.length() < r) N *= -1;
 
     return Hit(t,N);
