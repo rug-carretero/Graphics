@@ -121,6 +121,14 @@ public:
         z *= f;
         return *this;
     }
+	
+	Triple& operator*=(const Triple &t)
+	{
+		x *= t.x;
+		y *= t.y;
+		z *= t.z;
+		return *this;
+	}
 
     Triple& operator/=(const double f)
     {
