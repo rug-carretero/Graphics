@@ -35,8 +35,8 @@ Color Scene::trace(const Ray &ray)
 
     Material *material = obj->material;            //the hit objects material
     Point hit = ray.at(min_hit.t);                 //the hit point
-    Vector N = min_hit.N;                          //the normal at hit point
-    Vector V = -ray.D;                             //the view vector
+    Vector N = min_hit.N.normalized();                          //the normal at hit point
+    Vector V = -ray.D.normalized();                             //the view vector
 
 
     /****************************************************
@@ -72,15 +72,16 @@ Color Scene::trace(const Ray &ray)
     for (size_t i = 0; i < lights.size(); i++){
 		Vector Lm = (lights[i]->position - hit).normalized();
 		Vector Rm = 2* Lm.dot(N) * N - Lm;
-		/*double diffuse = max(0.0,material->kd * Lm.dot(N));
+		double diffuse = material->kd * max(0.0,Lm.dot(N));
 		Il +=  diffuse * lights[i]->color;
-		if(diffuse > 0) Il += max(0.0,material->ks * pow(Rm.dot(V),material->n)) * lights[i]->color;*/
-		color *= Lm.dot(N) * lights[i]->color * material->color * material->kd
+		if(diffuse > 0) Il += material->ks * pow(max(0.0,Rm.dot(V)),material->n) * lights[i]->color;
+		/*color *= Lm.dot(N) * lights[i]->color * material->color * material->kd
 			+ lights[i]->color * material->color * material->ka
-			+ pow(Rm.dot(V), material->n) * lights[i]->color * material->ks; 
+			+ pow(Rm.dot(V), material->n) * lights[i]->color * material->ks; */
     }
 
-    return color;
+
+    return color * Il;
 }
 
 void Scene::render(Image &img)
