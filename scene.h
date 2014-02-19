@@ -37,6 +37,7 @@ public:
     void setEye(Triple e);
     unsigned int getNumObjects() { return objects.size(); }
     unsigned int getNumLights() { return lights.size(); }
+	enum RenderModes {RenderPhong, RenderZBuffer, RenderNormal} renderMode;
 };
 
 #endif /* end of include guard: SCENE_H_KNBLQLP6 */

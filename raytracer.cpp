@@ -87,6 +87,12 @@ Light* Raytracer::parseLight(const YAML::Node& node)
     return new Light(position,color);
 }
 
+enum Scene::RenderModes parseRenderMode(const YAML::Node& node){
+	if(node == "zbuffer") return Scene::RenderZBuffer;
+	if(node == "normal") return Scene::RenderNormal;
+	return Scene::RenderPhong;
+}
+
 /*
 * Read a scene from file
 */
@@ -110,6 +116,9 @@ bool Raytracer::readScene(const std::string& inputFilename)
 
             // Read scene configuration options
             scene->setEye(parseTriple(doc["Eye"]));
+			if(const YAML::Node * rMode = doc.FindValue("RenderMode")){
+				scene->renderMode = parseRenderMode(*rMode);
+			}
 
             // Read and parse the scene objects
             const YAML::Node& sceneObjects = doc["Objects"];
@@ -153,6 +162,13 @@ void Raytracer::renderToFile(const std::string& outputFilename)
 {
     Image img(400,400);
     cout << "Tracing..." << endl;
+	cout << "Render mode: ";
+	switch(scene->renderMode){
+		case Scene::RenderPhong: cout << "phong"; break;
+		case Scene::RenderZBuffer: cout << "zbuffer"; break;
+		case Scene::RenderNormal: cout << "normal"; break;
+	}
+	cout << endl;
     scene->render(img);
     cout << "Writing image to " << outputFilename << "..." << endl;
     img.write_png(outputFilename.c_str());
