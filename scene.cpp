@@ -118,7 +118,7 @@ void Scene::zRender(Image &img){
         for (int x = 0; x < w; x++) {
             Point pixel(x+0.5, h-1-y+0.5, 0);
             Ray ray(eye, (pixel-eye).normalized());
-            double dist = trace(ray);
+            double dist = zbufferTrace(ray);
 	    if (dist > 0){
 	      if(dist < min) min = dist;
 	      if(dist > max) max = dist;
@@ -131,8 +131,8 @@ void Scene::zRender(Image &img){
         for (int x = 0; x < w; x++) {
             Point pixel(x+0.5, h-1-y+0.5, 0);
             Ray ray(eye, (pixel-eye).normalized());
-            double dist / (max - min) = trace(ray);
-            Color col = Color().set(dist);
+            double dist = zbufferTrace(ray) / (max - min);
+            Color col = Color(dist,dist,dist);
             img(x,y) = col;
         }
 
@@ -149,7 +149,7 @@ void Scene::phongRender(Image &img)
         for (int x = 0; x < w; x++) {
             Point pixel(x+0.5, h-1-y+0.5, 0);
             Ray ray(eye, (pixel-eye).normalized());
-            Color col = trace(ray);
+            Color col = phongTrace(ray);
             col.clamp();
             img(x,y) = col;
         }
