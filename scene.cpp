@@ -17,7 +17,28 @@
 #include "scene.h"
 #include "material.h"
 
-Color Scene::trace(const Ray &ray)
+double Scene::zbufferTrace(const Ray &ray){
+
+    // Find hit object and distance
+    Hit min_hit(std::numeric_limits<double>::infinity(),Vector());
+    Object *obj = NULL;
+    for (unsigned int i = 0; i < objects.size(); ++i) {
+        Hit hit(objects[i]->intersect(ray));
+        if (hit.t<min_hit.t) {
+            min_hit = hit;
+            obj = objects[i];
+        }
+    }
+
+    // No hit? Return negative.
+    if (!obj) return -1.0;
+
+    return min_hit.t;
+
+}
+
+
+Color Scene::phongTrace(const Ray &ray)
 {
     // Find hit object and distance
     Hit min_hit(std::numeric_limits<double>::infinity(),Vector());
@@ -86,7 +107,41 @@ Color Scene::trace(const Ray &ray)
     return color * Il;
 }
 
-void Scene::render(Image &img)
+void Scene::zRender(Image &img){
+    int w = img.width();
+    int h = img.height();
+
+    double min = std::numeric_limits<double>::infinity();
+    double max = 0.0;
+
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            Point pixel(x+0.5, h-1-y+0.5, 0);
+            Ray ray(eye, (pixel-eye).normalized());
+            double dist = trace(ray);
+	    if (dist > 0){
+	      if(dist < min) min = dist;
+	      if(dist > max) max = dist;
+	    }
+        }
+
+    }
+
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            Point pixel(x+0.5, h-1-y+0.5, 0);
+            Ray ray(eye, (pixel-eye).normalized());
+            double dist / (max - min) = trace(ray);
+            Color col = Color().set(dist);
+            img(x,y) = col;
+        }
+
+    }
+   
+
+}
+
+void Scene::phongRender(Image &img)
 {
     int w = img.width();
     int h = img.height();
@@ -99,6 +154,19 @@ void Scene::render(Image &img)
             img(x,y) = col;
         }
     }
+}
+
+void Scene::normalRender(Image &img){
+  return;
+}
+
+void Scene::render(Image &img){
+  switch(renderMode){
+  case RenderPhong: phongRender(img); break;
+  case RenderZBuffer: zRender(img); break;
+  case RenderNormal: normalRender(img); break;
+}
+
 }
 
 void Scene::addObject(Object *o)
