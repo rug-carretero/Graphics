@@ -156,8 +156,38 @@ void Scene::phongRender(Image &img)
     }
 }
 
+Vector Scene::normalTrace(const Ray& ray){
+
+    // Find hit object and distance
+    Hit min_hit(std::numeric_limits<double>::infinity(),Vector());
+    Object *obj = NULL;
+    for (unsigned int i = 0; i < objects.size(); ++i) {
+        Hit hit(objects[i]->intersect(ray));
+        if (hit.t<min_hit.t) {
+            min_hit = hit;
+            obj = objects[i];
+        }
+    }
+
+    // No hit? Return negative.
+    if (!obj) return Vector(0, 0, 0);
+
+    return min_hit.N;
+
+}
+
 void Scene::normalRender(Image &img){
-  return;
+  int w = img.width();
+    int h = img.height();
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            Point pixel(x+0.5, h-1-y+0.5, 0);
+            Ray ray(eye, (pixel-eye).normalized());
+            Color col = normalTrace(ray);
+            col.clamp();
+            img(x,y) = col;
+        }
+    }
 }
 
 void Scene::render(Image &img){
