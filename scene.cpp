@@ -17,6 +17,8 @@
 #include "scene.h"
 #include "material.h"
 
+#define ABS(x) (x < 0 ? x : -x)
+
 double Scene::zbufferTrace(const Ray &ray){
 
     // Find hit object and distance
@@ -172,7 +174,9 @@ Vector Scene::normalTrace(const Ray& ray){
     // No hit? Return negative.
     if (!obj) return Vector(0, 0, 0);
 
-    return min_hit.N;
+    min_hit.N = min_hit.N.normalized();
+	
+	return Vector((min_hit.N.x + 1.0)/2.0, (min_hit.N.y + 1.0)/2.0, (min_hit.N.z + 1.0)/2.0);
 
 }
 
