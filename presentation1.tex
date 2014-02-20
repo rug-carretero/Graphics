@@ -41,13 +41,28 @@
 \end{itemize}
 
    \begin{figure}[ht]
-       \includegraphics[width=5cm]{scene01.png} %phong wrong
-       \includegraphics[width=5cm]{scene01.png} %phong right
+       \includegraphics[width=5cm]{scene01-wrong.png} %phong wrong
+       \includegraphics[width=5cm]{scene01-right.png} %phong right
     \end{figure}
 
 \end{frame}
 
+\begin{frame}{Zbuffer/Normal rendering}
 
+\begin{itemize}
+  \item Different render functions
+  \item Z Buffer: return Distance instead of color
+  \item store min and max distance, another loop to adjust to range 0-1
+  \item Normal: already calculated in intersect()
+  \item Unit vector $\rightarrow [-1,1] +1, / 2 = [0,1]$
+\end{itemize}
+
+   \begin{figure}[ht]
+       \includegraphics[width=5cm]{scene01-zbuffer.png} %phong wrong
+       \includegraphics[width=5cm]{scene01-normal.png} %phong right
+    \end{figure}
+
+\end{frame}
 
 
 \end{document}
