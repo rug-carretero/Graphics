@@ -6,7 +6,7 @@ Hit Triangle::intersect(const Ray& ray){
 	Vector N = (v1 - v0).cross(v2 - v0);
 	double nDotRay = N.dot(ray.D);
 	
-	if(nDotRay == 0.0){
+	if(nDotRay > -1e-6 && nDotRay < 1e-6){
 		return Hit::NO_HIT();
 	}
 	
@@ -31,5 +31,5 @@ Hit Triangle::intersect(const Ray& ray){
 	N = N.normalized();
 	if(N.dot(-ray.D) < 0) N = -N;
 	
-	return Hit(t, N);
+	return Hit(dist, N);
 }
