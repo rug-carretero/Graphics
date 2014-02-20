@@ -113,7 +113,7 @@ void Scene::zRender(Image &img){
 			
 			double dist = zbufferTrace(ray);
 			
-			if (dist > 0){
+			if (dist >= 0){
 				if(dist < min) min = dist;
 				if(dist > max) max = dist;
 			}
@@ -124,7 +124,8 @@ void Scene::zRender(Image &img){
         for (int x = 0; x < w; x++) {
             Point pixel(x+0.5, h-1-y+0.5, 0);
             Ray ray(eye, (pixel-eye).normalized());
-            double dist = (zbufferTrace(ray) - min) / (max - min);
+            double dist = zbufferTrace(ray);
+            dist = dist < 0 ? 0 : 1.0 - ((dist - min) / (max - min));
             Color col = Color(dist,dist,dist);
             img(x,y) = col;
         }
