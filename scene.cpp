@@ -92,6 +92,8 @@ Color Scene::phongTrace(const Ray &ray)
 
     Color Il = Color(0,0,0);
 
+	Color specular = Color(0,0,0);
+
     for (size_t i = 0; i < lights.size(); i++){
 		Vector Lm = (lights[i]->position - hit).normalized();
 		Vector Rm = 2* Lm.dot(N) * N - Lm;
@@ -99,14 +101,14 @@ Color Scene::phongTrace(const Ray &ray)
 		double diffuse = material->kd * max(0.0,Lm.dot(N));
 		Il +=  diffuse * lights[i]->color;
 		Il += material->ka * lights[i]->color;
-		/*if(diffuse > 0)*/ Il += material->ks * pow(max(0.0,Rm.dot(h)),material->n) * lights[i]->color;
+		specular += material->ks * pow(max(0.0,Rm.dot(V)),material->n) * lights[i]->color;
 		/*color *= Lm.dot(N) * lights[i]->color * material->color * material->kd
 			+ lights[i]->color * material->color * material->ka
 			+ pow(Rm.dot(V), material->n) * lights[i]->color * material->ks; */
     }
 
 
-    return color * Il;
+    return color * Il + specular;
 }
 
 void Scene::zRender(Image &img){
