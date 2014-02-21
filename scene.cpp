@@ -17,10 +17,7 @@
 #include "scene.h"
 #include "material.h"
 
-#define ABS(x) (x < 0 ? x : -x)
-
 double Scene::zbufferTrace(const Ray &ray){
-
     // Find hit object and distance
     Hit min_hit(std::numeric_limits<double>::infinity(),Vector());
     Object *obj = NULL;
@@ -36,7 +33,6 @@ double Scene::zbufferTrace(const Ray &ray){
     if (!obj) return -1.0;
 
     return min_hit.t;
-
 }
 
 
@@ -58,8 +54,8 @@ Color Scene::phongTrace(const Ray &ray)
 
     Material *material = obj->material;            //the hit objects material
     Point hit = ray.at(min_hit.t);                 //the hit point
-    Vector N = min_hit.N.normalized();                          //the normal at hit point
-    Vector V = -ray.D.normalized();                             //the view vector
+    Vector N = min_hit.N.normalized();             //the normal at hit point
+    Vector V = -ray.D.normalized();                //the view vector
 
 
     /****************************************************
@@ -82,12 +78,6 @@ Color Scene::phongTrace(const Ray &ray)
 
     //see also http://en.wikipedia.org/wiki/Phong_reflection_model
 
-    /*Color Ia = lights[0]->color;
-
-    for(size_t i = 1; i < lights.size();i++){
-		Ia += lights[i]->color;
-		}*/
-
     Color color = material->color;
 
     Color Il = Color(0,0,0);
@@ -97,16 +87,14 @@ Color Scene::phongTrace(const Ray &ray)
     for (size_t i = 0; i < lights.size(); i++){
 		Vector Lm = (lights[i]->position - hit).normalized();
 		Vector Rm = 2* Lm.dot(N) * N - Lm;
-		Vector h = (Lm + V).normalized();
+		
 		double diffuse = material->kd * max(0.0,Lm.dot(N));
+		
 		Il +=  diffuse * lights[i]->color;
 		Il += material->ka * lights[i]->color;
-		specular += material->ks * pow(max(0.0,Rm.dot(V)),material->n) * lights[i]->color;
-		/*color *= Lm.dot(N) * lights[i]->color * material->color * material->kd
-			+ lights[i]->color * material->color * material->ka
-			+ pow(Rm.dot(V), material->n) * lights[i]->color * material->ks; */
+		
+	       specular += material->ks * pow(max(0.0,Rm.dot(V)),material->n) * lights[i]->color;
     }
-
 
     return color * Il + specular;
 }
@@ -118,31 +106,30 @@ void Scene::zRender(Image &img){
     double min = std::numeric_limits<double>::infinity();
     double max = 0.0;
 
+	for (int y = 0; y < h; y++) {
+		for (int x = 0; x < w; x++) {
+			Point pixel(x+0.5, h-1-y+0.5, 0);
+			Ray ray(eye, (pixel-eye).normalized());
+			
+			double dist = zbufferTrace(ray);
+			
+			if (dist >= 0){
+				if(dist < min) min = dist;
+				if(dist > max) max = dist;
+			}
+		}
+	}
+
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
             Point pixel(x+0.5, h-1-y+0.5, 0);
             Ray ray(eye, (pixel-eye).normalized());
             double dist = zbufferTrace(ray);
-	    if (dist > 0){
-	      if(dist < min) min = dist;
-	      if(dist > max) max = dist;
-	    }
-        }
-
-    }
-
-    for (int y = 0; y < h; y++) {
-        for (int x = 0; x < w; x++) {
-            Point pixel(x+0.5, h-1-y+0.5, 0);
-            Ray ray(eye, (pixel-eye).normalized());
-            double dist = zbufferTrace(ray) / (max - min);
+            dist = dist < 0 ? 0 : 1.0 - ((dist - min) / (max - min));
             Color col = Color(dist,dist,dist);
             img(x,y) = col;
         }
-
     }
-   
-
 }
 
 void Scene::phongRender(Image &img)
@@ -178,8 +165,7 @@ Vector Scene::normalTrace(const Ray& ray){
 
     min_hit.N = min_hit.N.normalized();
 	
-	return Vector((min_hit.N.x + 1.0)/2.0, (min_hit.N.y + 1.0)/2.0, (min_hit.N.z + 1.0)/2.0);
-
+	return (min_hit.N + 1.0)/2.0;
 }
 
 void Scene::normalRender(Image &img){
@@ -197,12 +183,11 @@ void Scene::normalRender(Image &img){
 }
 
 void Scene::render(Image &img){
-  switch(renderMode){
-  case RenderPhong: phongRender(img); break;
-  case RenderZBuffer: zRender(img); break;
-  case RenderNormal: normalRender(img); break;
-}
-
+	switch(renderMode){
+		case RenderPhong: phongRender(img); break;
+		case RenderZBuffer: zRender(img); break;
+		case RenderNormal: normalRender(img); break;
+	}
 }
 
 void Scene::addObject(Object *o)

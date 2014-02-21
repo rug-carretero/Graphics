@@ -37,39 +37,35 @@ Hit Sphere::intersect(const Ray &ray)
     * Otherwise, return true and place the distance of the
     * intersection point from the ray origin in *t (see example).
     ****************************************************/
-  /*
-zie ook
-    http://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
-  */
+	/*
+		zie ook
+		http://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
+	*/
 
-    // place holder for actual intersection calculation
+	Vector distance = ray.O - position;
+	Vector direction = ray.D.normalized();
 
+	double discriminant = direction.dot(distance) * direction.dot(distance) - distance.dot(distance) + r*r;
 
-  Vector distance = ray.O - position;
-  Vector direction = ray.D.normalized();
+	if(discriminant < 0) return Hit::NO_HIT();
 
-  double discriminant = direction.dot(distance) * direction.dot(distance) - distance.dot(distance) + r*r;
+	double intersect1 = -(direction.dot(distance)) + sqrt(discriminant);
+	double intersect2 = -(direction.dot(distance)) - sqrt(discriminant);
 
+	double t = (distance.length() < r) ? max(intersect1,intersect2) : min(intersect1,intersect2);
 
-  if(discriminant < 0) return Hit::NO_HIT();
-  
-  double intersect1 = -(direction.dot(distance)) + sqrt(discriminant);
-  double intersect2 = -(direction.dot(distance)) - sqrt(discriminant);
+	/****************************************************
+	* RT1.2: NORMAL CALCULATION
+	*
+	* Given: t, C, r
+	* Sought: N
+	* 
+	* Insert calculation of the sphere's normal at the intersection point.
+	****************************************************/
 
-double t = (distance.length() < r) ? max(intersect1,intersect2) : min(intersect1,intersect2);
+	Vector N = (ray.O + direction * t - position).normalized();
+	// if(distance.length() < r) N *= -1;
+	if(N.dot(-ray.D) < 0) N = -N;
 
-   
-    /****************************************************
-    * RT1.2: NORMAL CALCULATION
-    *
-    * Given: t, C, r
-    * Sought: N
-    * 
-    * Insert calculation of the sphere's normal at the intersection point.
-    ****************************************************/
-
-  Vector N = (ray.O + direction * t - position).normalized();
-  if(distance.length() < r) N *= -1;
-
-    return Hit(t,N);
+	return Hit(t,N);
 }
