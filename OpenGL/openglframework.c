@@ -34,13 +34,26 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-GLfloat cubeVertices[8*3] = {-1,-1,-1, -1,-1, 1, -1, 1,-1,  1,-1,-1, -1, 1, 1,  1,-1, 1,  1, 1,-1,  1, 1, 1};
-GLubyte cubeIndices[2*12] = {
-        0,1, 0,2, 0,3,                /* From three minusses to two minusses */
-        1,4, 1,5, 2,4, 2,6, 3,5, 3,6, /* From two minusses to one minus */
-        4,7, 5,7, 6,7                 /* From one minus to zero minusses */
-    };
+GLfloat cubeVertices[8*3] = {
+	-1,-1,-1,
+	-1,-1, 1,
+	-1, 1,-1,
+	 1,-1,-1,
+	-1, 1, 1,
+	 1,-1, 1,
+	 1, 1,-1,
+	 1, 1, 1};
+//GLubyte cubeIndices[2*12] = {
+//        0,1, 0,2, 0,3,                /* From three minusses to two minusses */
+//        1,4, 1,5, 2,4, 2,6, 3,5, 3,6, /* From two minusses to one minus */
+//        4,7, 5,7, 6,7                 /* From one minus to zero minusses */
+//    };
 
+GLubyte cubeIndices[2*12] = {
+//        0,1, 0,2, 0,3,                /* From three minusses to two minusses */
+        1,4, 1,5, 2,4, 2,6, 3,5, 3,6, /* From two minusses to one minus */
+//        4,7, 5,7, 6,7                 /* From one minus to zero minusses */
+    };
  
 
 void display(void)
@@ -55,7 +68,7 @@ void display(void)
 	glVertexPointer(3, GL_FLOAT, 0, cubeVertices);
 
 	// draw a cube
-	glDrawElements(GL_LINES, 24, GL_UNSIGNED_BYTE, cubeIndices);
+	glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_BYTE, cubeIndices);
 
 	// deactivate vertex arrays after drawing
 	glDisableClientState(GL_VERTEX_ARRAY);
