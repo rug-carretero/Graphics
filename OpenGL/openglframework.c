@@ -49,7 +49,7 @@ GLfloat cubeVertices[8*3] = {
 //        4,7, 5,7, 6,7                 /* From one minus to zero minusses */
 //    };
 
-GLubyte cubeIndices[3*10] = {
+GLubyte cubeIndices[3*12] = {
 //        0,1, 0,2, 0,3,                /* From three minusses to two minusses */
 //        1,4, 1,5, 2,4, 2,6, 3,5, 3,6, /* From two minusses to one minus */
 //        4,7, 5,7, 6,7                 /* From one minus to zero minusses */
@@ -57,18 +57,22 @@ GLubyte cubeIndices[3*10] = {
   5,6,7, 3,5,6,//right panel
   0,1,3, 5,1,3,//bottom panel
   0,2,6, 0,3,6,//back panel
-  1,4,2, 1,7,2
-
+  2,6,7, 2,4,7,//top
+  4,7,5, 4,1,5 // front
     };
  
-
+double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
+	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
+	upX = 0.0, upY = 1.0, upZ = 0.0;
+ 
 void display(void)
 {
     /* Clear all pixels */
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glColor3f(0.0f,0.0f,1.0f);
     glLoadIdentity();
-    gluLookAt(0.0,0.0,5.0,0.0,0.0,0.0,0.0,1.0,0.0);
+	
+    gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, cubeVertices);
@@ -82,8 +86,9 @@ void display(void)
 	glColor3f(1.0f,1.0f,0.0f);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices+18);
 	glColor3f(0.0f,1.0f,1.0f);
-	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices+24);
-
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices+24);
+	glColor3f(0.1f,0.0f,1.0f);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices+30);
 
 	// deactivate vertex arrays after drawing
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -94,6 +99,8 @@ void display(void)
 
 void keyboard(unsigned char key, int x, int y)
 {
+	printf("Key: '%c'\n", key);
+	
     switch (key) {
         case 'q':
         case 'Q':
@@ -101,6 +108,14 @@ void keyboard(unsigned char key, int x, int y)
             printf("Exiting...\n");
             exit(0);
             break;
+		case 'a':
+			centerX -= 0.1;
+			glutPostRedisplay();
+			break;
+		case 'd':
+			centerX += 0.1;
+			glutPostRedisplay();
+			break;
     }
 }
 
@@ -111,6 +126,10 @@ void reshape(int w, int h)
     glLoadIdentity();
     gluPerspective(60.0,(GLdouble)w/(GLdouble)h,1.5,20.0);
     glMatrixMode(GL_MODELVIEW);
+}
+
+void motion(int x, int y){
+	printf("%ix%i\n", x, y);
 }
 
 int main(int argc, char** argv)
@@ -146,7 +165,7 @@ int main(int argc, char** argv)
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
     glutReshapeFunc(reshape);
-
+	glutMotionFunc(motion);
 
     glutMainLoop();
 
