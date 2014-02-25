@@ -1,1 +1,3 @@
-openglframework.o: openglframework.c
+openglframework.o: openglframework.c glew.h includes/GL/freeglut.h \
+ includes/GL/freeglut_std.h includes/GL/freeglut_ext.h
+glew.o: glew.c glew.h wglew.h

@@ -15,7 +15,7 @@ else
 	ifeq ($(findstring MINGW,$(UNAME)),MINGW)
 		CC += -Iincludes -DNEED_GLEW -DGLEW_STATIC # You might need glew on MingW
 		OBJS += glew.o
-		LIBS = -lm -lopengl32 -lglu32 -Llibs -lfreeglut
+		LIBS = -lm -lopengl32 -lglu32 -lfreeglut
 	else
 		LIBS = -lm -lGL -lglut -lGLU
 	endif
