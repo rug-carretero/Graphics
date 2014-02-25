@@ -29,10 +29,12 @@
 #include <GL/glut.h>
 #endif
 
-
+#define PI 3.141592653
+#define PI_2 (PI*2)
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 GLfloat cubeVertices[8*3] = {
 	-1,-1,-1,
@@ -63,7 +65,9 @@ GLubyte cubeIndices[3*12] = {
  
 double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
 	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
-	upX = 0.0, upY = 1.0, upZ = 0.0;
+	upX = 0.0, upY = 1.0, upZ = 0.0,
+	
+	phi = 0.0, dist = 5.0;
  
 void display(void)
 {
@@ -72,7 +76,7 @@ void display(void)
     glColor3f(0.0f,0.0f,1.0f);
     glLoadIdentity();
 	
-    gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
+    gluLookAt(sin(phi)*dist, eyeY, cos(phi)*dist, centerX, centerY, centerZ, upX, upY, upZ);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, cubeVertices);
@@ -97,6 +101,11 @@ void display(void)
     glutSwapBuffers();
 }
 
+void incPhi(double delta){
+	phi += delta;
+	phi = fmod(phi, PI_2);
+}
+
 void keyboard(unsigned char key, int x, int y)
 {
 	printf("Key: '%c'\n", key);
@@ -109,11 +118,11 @@ void keyboard(unsigned char key, int x, int y)
             exit(0);
             break;
 		case 'a':
-			centerX -= 0.1;
+			incPhi(0.1);
 			glutPostRedisplay();
 			break;
 		case 'd':
-			centerX += 0.1;
+			incPhi(-0.1);
 			glutPostRedisplay();
 			break;
     }
