@@ -49,10 +49,16 @@ GLfloat cubeVertices[8*3] = {
 //        4,7, 5,7, 6,7                 /* From one minus to zero minusses */
 //    };
 
-GLubyte cubeIndices[2*12] = {
+GLubyte cubeIndices[3*10] = {
 //        0,1, 0,2, 0,3,                /* From three minusses to two minusses */
-        1,4, 1,5, 2,4, 2,6, 3,5, 3,6, /* From two minusses to one minus */
+//        1,4, 1,5, 2,4, 2,6, 3,5, 3,6, /* From two minusses to one minus */
 //        4,7, 5,7, 6,7                 /* From one minus to zero minusses */
+  0,1,2, 4,1,2,//left panel
+  5,6,7, 3,5,6,//right panel
+  0,1,3, 5,1,3,//bottom panel
+  0,2,6, 0,3,6,//back panel
+  1,4,2, 1,7,2
+
     };
  
 
@@ -68,7 +74,16 @@ void display(void)
 	glVertexPointer(3, GL_FLOAT, 0, cubeVertices);
 
 	// draw a cube
-	glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_BYTE, cubeIndices);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices);
+	glColor3f(1.0f,0.0f,0.0f);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices+6);
+	glColor3f(0.0f,1.0f,0.0f);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices+12);
+	glColor3f(1.0f,1.0f,0.0f);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices+18);
+	glColor3f(0.0f,1.0f,1.0f);
+	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices+24);
+
 
 	// deactivate vertex arrays after drawing
 	glDisableClientState(GL_VERTEX_ARRAY);
