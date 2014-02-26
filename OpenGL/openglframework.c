@@ -46,6 +46,18 @@ double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
 int mouseX = 0, mouseY = 0;
 
 /*
+ * Rotation-helpers
+ */
+void incPhi(double delta){
+	phi += delta;
+	phi = fmod(phi, 2.0*M_PI);
+}
+void incTheta(double delta){
+	theta += delta;
+	theta = fmod(theta, 2.0*M_PI);
+}
+
+/*
  * Input handling
  */
 
@@ -60,8 +72,18 @@ void motion(int x, int y){
 	int deltaX = x - mouseX,
 		deltaY = y - mouseY;
 	
-	incTheta((double)deltaX/100.0);
-	incPhi((double)deltaY/100.0);
+	if(glutGetModifiers() == GLUT_ACTIVE_CTRL){
+		centerX -= deltaX;
+		eyeX -= deltaX;
+		
+		centerY += deltaY;
+		eyeY += deltaY;
+	}else if(glutGetModifiers() == GLUT_ACTIVE_SHIFT){
+		eyeZ += deltaY;
+	}else{
+		incTheta((double)deltaX/100.0);
+		incPhi((double)deltaY/100.0);
+	}
 	
 	mouseX = x;
 	mouseY = y;
@@ -71,44 +93,52 @@ void motion(int x, int y){
 
 void keyboard(unsigned char key, int x, int y)
 {
-	printf("Key: '%c'\n", key);
-	
-    switch (key) {
+	switch (key) {
         case 'q':
         case 'Q':
         case 27: // ESC key
             printf("Exiting...\n");
             exit(0);
-            break;
+        break;
+			
 		case 'a':
-			incTheta(-0.1);
-			glutPostRedisplay();
-			break;
+			//
+			eyeX -= 10.0;
+			centerX -= 10.0;
+		break;
 		case 'd':
-			incTheta(0.1);
-			glutPostRedisplay();
-			break;
+			//
+			eyeX += 10.0;
+			centerX += 10.0;
+		break;
 		case 'w':
-			incPhi(0.1);
-			glutPostRedisplay();
-			break;
+			//
+			eyeZ -= 10.0;
+		break;
 		case 's':
-			incPhi(-0.1);
-			glutPostRedisplay();
-			break;
+			//
+			eyeZ += 10.0;
+		break;
     }
+	glutPostRedisplay();
 }
 
-/*
- * Rotation-helpers
- */
-void incPhi(double delta){
-	phi += delta;
-	phi = fmod(phi, 2.0*M_PI);
-}
-void incTheta(double delta){
-	theta += delta;
-	theta = fmod(theta, 2.0*M_PI);
+void specialKeyboard(int key, int x, int y){
+	switch(key){
+		case GLUT_KEY_UP:
+			incPhi(-0.05);
+		break;
+		case GLUT_KEY_DOWN:
+			incPhi(0.05);
+		break;
+		case GLUT_KEY_LEFT:
+			incTheta(-0.05);
+		break;
+		case GLUT_KEY_RIGHT:
+			incTheta(0.05);
+		break;
+	}
+	glutPostRedisplay();
 }
 
 /*
@@ -180,7 +210,7 @@ void reshapeCube(int w, int h)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(60.0,(GLdouble)w/(GLdouble)h,1.5,20.0);
-    glMatrixMode(GL_MODELVIEW);
+    glMatrixMode(GL_PROJECTION);
 }
 
 /*
@@ -324,6 +354,7 @@ int main(int argc, char** argv)
 
     /* Register GLUT callback functions */
     glutKeyboardFunc(keyboard);
+	glutSpecialFunc(specialKeyboard);
 	glutMotionFunc(motion);
 	glutMouseFunc(mouse);
 	
