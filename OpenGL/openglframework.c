@@ -304,11 +304,14 @@ int main(int argc, char** argv)
     glClearColor(0.0,0.0,0.0,0.0);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
+    //    glEnable(GL_COLOR_MATERIAL);
+    //glEnable(GL_LIGHTING);
+    //glEnable(GL_LIGHT0);
 
     /* Register GLUT callback functions */
-    glutDisplayFunc(display);
+    glutDisplayFunc(displaySphere);
     glutKeyboardFunc(keyboard);
-    glutReshapeFunc(reshape);
+    glutReshapeFunc(reshapeSphere);
 	glutMotionFunc(motion);
 	glutMouseFunc(mouse);
 
