@@ -34,33 +34,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-
-GLfloat cubeVertices[8*3] = {
-	-1,-1,-1,
-	-1,-1, 1,
-	-1, 1,-1,
-	 1,-1,-1,
-	-1, 1, 1,
-	 1,-1, 1,
-	 1, 1,-1,
-	 1, 1, 1};
-//GLubyte cubeIndices[2*12] = {
-//        0,1, 0,2, 0,3,                /* From three minusses to two minusses */
-//        1,4, 1,5, 2,4, 2,6, 3,5, 3,6, /* From two minusses to one minus */
-//        4,7, 5,7, 6,7                 /* From one minus to zero minusses */
-//    };
-
-GLubyte cubeIndices[3*12] = {
-//        0,1, 0,2, 0,3,                /* From three minusses to two minusses */
-//        1,4, 1,5, 2,4, 2,6, 3,5, 3,6, /* From two minusses to one minus */
-//        4,7, 5,7, 6,7                 /* From one minus to zero minusses */
-  0,1,2, 4,1,2,//left panel
-  5,6,7, 3,5,6,//right panel
-  0,1,3, 5,1,3,//bottom panel
-  0,2,6, 0,3,6,//back panel
-  2,6,7, 2,4,7,//top
-  4,7,5, 4,1,5 // front
-    };
  
 double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
 	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
@@ -69,23 +42,31 @@ double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
 	phi = 0.0, theta = 0.0, dist = 5.0;
 	
 int mouseX = 0, mouseY = 0;
- 
-void display(void)
-{
-    /* Clear all pixels */
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity();
-	
-	// http://mathworld.wolfram.com/SphericalCoordinates.html
-	double x = dist*sin(theta)*sin(phi),
-		y = dist*cos(phi),
-		z = dist*cos(theta)*sin(phi);
-	
-    gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
-    
-    glRotated(theta * 180.0/M_PI, upX, upY, upZ);
-    glRotated(phi * 180.0/M_PI, 1.0, 0.0, 0.0);
 
+void drawCube(void){
+
+	static const GLfloat cubeVertices[8*3] = {
+		-1,-1,-1,
+		-1,-1, 1,
+		-1, 1,-1,
+		 1,-1,-1,
+		-1, 1, 1,
+		 1,-1, 1,
+		 1, 1,-1,
+		 1, 1, 1
+	};
+
+	static const GLubyte cubeIndices[3*12] = {
+		//        0,1, 0,2, 0,3,                /* From three minusses to two minusses */
+		//        1,4, 1,5, 2,4, 2,6, 3,5, 3,6, /* From two minusses to one minus */
+		//        4,7, 5,7, 6,7                 /* From one minus to zero minusses */
+		0,1,2, 4,1,2, //left panel
+		5,6,7, 3,5,6, //right panel
+		0,1,3, 5,1,3, //bottom panel
+		0,2,6, 0,3,6, //back panel
+		2,6,7, 2,4,7, //top
+		4,7,5, 4,1,5  // front
+	};
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, cubeVertices);
 
@@ -105,7 +86,20 @@ void display(void)
 
 	// deactivate vertex arrays after drawing
 	glDisableClientState(GL_VERTEX_ARRAY);
-
+}
+ 
+void display(void)
+{
+    /* Clear all pixels */
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+	
+    gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
+    
+    glRotated(theta * 180.0/M_PI, upX, upY, upZ);
+    glRotated(phi * 180.0/M_PI, 1.0, 0.0, 0.0);
+	
+	drawCube();
 
     glutSwapBuffers();
 }
@@ -115,24 +109,10 @@ void incTheta(double delta);
 void incPhi(double delta){
 	phi += delta;
 	phi = fmod(phi, 2.0*M_PI);
-	/*while(phi > M_PI){
-		phi -= M_PI;
-	}
-	
-	while(phi < 0){
-		phi += M_PI;
-	}*/
 }
 void incTheta(double delta){
 	theta += delta;
 	theta = fmod(theta, 2.0*M_PI);
-	/*while(theta < 0){
-		theta += M_PI*2.0;
-	}
-	
-	while(theta >= M_PI*2.0){
-		theta -= M_PI*2.0;
-	}*/
 }
 
 void keyboard(unsigned char key, int x, int y)
@@ -207,22 +187,7 @@ void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfl
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, n);
 }
 
-void displaySphere(void)
-{
-    /* Clear all pixels */
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity();
-    
-    double dist = 250.0,
-		x = dist*sin(theta)*sin(phi),
-		y = dist*cos(phi),
-		z = dist*cos(theta)*sin(phi);
-    
-    gluLookAt(200.0, 200.0, 1000.0, 200.0, 200.0, 0.0, 0.0, 1.0, 0.0);
-
-    /* Set up other things you may need */
-    /* ... */
-    
+void drawSpheres(void){
     GLfloat lightPos[] = {-200.0, 600.0, 1500.0, 1.0};
     GLfloat lightAmbient[] = {1.0, 1.0, 1.0, 1.0};
     
@@ -260,9 +225,23 @@ void displaySphere(void)
     glTranslated(110,130,200);
     glutSolidSphere(50,SPHERE_N,SPHERE_N);
     glPopMatrix();
+}
 
-    /* Whatever clean up you need */
-    /* ... */
+void displaySphere(void)
+{
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	
+    /* Clear all pixels */
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+    
+    gluLookAt(200.0, 200.0, 1000.0, 200.0, 200.0, 0.0, 0.0, 1.0, 0.0);
+    
+    glRotated(theta * 180.0/M_PI, upX, upY, upZ);
+    glRotated(phi * 180.0/M_PI, 1.0, 0.0, 0.0);
+	
+	drawSpheres();
 
     glutSwapBuffers();
 }
@@ -281,7 +260,6 @@ int main(int argc, char** argv)
 #if defined(NEED_GLEW)
     GLenum err;
 #endif
-
 
     glutInit(&argc,argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -304,11 +282,12 @@ int main(int argc, char** argv)
     glClearColor(0.0,0.0,0.0,0.0);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_COLOR_MATERIAL);
 
     /* Register GLUT callback functions */
-    glutDisplayFunc(display);
+    glutDisplayFunc(displaySphere);
     glutKeyboardFunc(keyboard);
-    glutReshapeFunc(reshape);
+    glutReshapeFunc(reshapeSphere);
 	glutMotionFunc(motion);
 	glutMouseFunc(mouse);
 
