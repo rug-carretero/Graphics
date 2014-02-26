@@ -67,21 +67,28 @@ double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
 	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
 	upX = 0.0, upY = 1.0, upZ = 0.0,
 	
-	phi = 0.0, dist = 5.0;
+	phi = PI/2.0, theta = 0.0, dist = 5.0;
+	
+int mouseX = 0, mouseY = 0;
  
 void display(void)
 {
     /* Clear all pixels */
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    glColor3f(0.0f,0.0f,1.0f);
     glLoadIdentity();
 	
-    gluLookAt(sin(phi)*dist, eyeY, cos(phi)*dist, centerX, centerY, centerZ, upX, upY, upZ);
+	// http://mathworld.wolfram.com/SphericalCoordinates.html
+	double x = dist*sin(theta)*sin(phi),
+		y = dist*cos(phi),
+		z = dist*cos(theta)*sin(phi);
+	
+    gluLookAt(x, y, z, centerX, centerY, centerZ, upX, upY, upZ);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, cubeVertices);
 
 	// draw a cube
+    glColor3f(0.0f,0.0f,1.0f);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices);
 	glColor3f(1.0f,0.0f,0.0f);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices+6);
@@ -103,7 +110,17 @@ void display(void)
 
 void incPhi(double delta){
 	phi += delta;
-	phi = fmod(phi, PI_2);
+	while(phi > PI){
+		phi -= PI;
+	}
+	
+	while(phi < 0){
+		phi += PI;
+	}
+}
+void incTheta(double delta){
+	theta += delta;
+	theta = fmod(theta, PI_2);
 }
 
 void keyboard(unsigned char key, int x, int y)
@@ -118,10 +135,18 @@ void keyboard(unsigned char key, int x, int y)
             exit(0);
             break;
 		case 'a':
-			incPhi(0.1);
+			incTheta(-0.1);
 			glutPostRedisplay();
 			break;
 		case 'd':
+			incTheta(0.1);
+			glutPostRedisplay();
+			break;
+		case 'w':
+			incPhi(0.1);
+			glutPostRedisplay();
+			break;
+		case 's':
 			incPhi(-0.1);
 			glutPostRedisplay();
 			break;
@@ -137,8 +162,28 @@ void reshape(int w, int h)
     glMatrixMode(GL_MODELVIEW);
 }
 
+void mouse(int button, int state, int x, int y){
+	if(state == GLUT_DOWN){
+		mouseX = x;
+		mouseY = y;
+	}
+}
+
 void motion(int x, int y){
-	printf("%ix%i\n", x, y);
+	int deltaX = x - mouseX,
+		deltaY = y - mouseY;
+		
+	printf("@ %f, %f\n", centerX, centerY);
+	
+	incTheta(-(double)deltaX/100.0);
+	incPhi(-(double)deltaY/100.0);
+	
+	printf("@ %f, %f\n\n", centerX, centerY);
+	
+	mouseX = x;
+	mouseY = y;
+	
+	glutPostRedisplay();
 }
 
 int main(int argc, char** argv)
@@ -175,6 +220,7 @@ int main(int argc, char** argv)
     glutKeyboardFunc(keyboard);
     glutReshapeFunc(reshape);
 	glutMotionFunc(motion);
+	glutMouseFunc(mouse);
 
     glutMainLoop();
 
