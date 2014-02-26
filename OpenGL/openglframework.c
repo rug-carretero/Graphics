@@ -29,8 +29,7 @@
 #include <GL/glut.h>
 #endif
 
-#define PI 3.141592653
-#define PI_2 (PI*2)
+#define M_PI 3.141592653
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -67,7 +66,7 @@ double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
 	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
 	upX = 0.0, upY = 1.0, upZ = 0.0,
 	
-	phi = PI/2.0, theta = 0.0, dist = 5.0;
+	phi = 0.0, theta = 0.0, dist = 5.0;
 	
 int mouseX = 0, mouseY = 0;
  
@@ -82,7 +81,10 @@ void display(void)
 		y = dist*cos(phi),
 		z = dist*cos(theta)*sin(phi);
 	
-    gluLookAt(x, y, z, centerX, centerY, centerZ, upX, upY, upZ);
+    gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
+    
+    glRotated(theta * 180.0/M_PI, upX, upY, upZ);
+    glRotated(phi * 180.0/M_PI, 1.0, 0.0, 0.0);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, cubeVertices);
@@ -108,19 +110,29 @@ void display(void)
     glutSwapBuffers();
 }
 
+void incTheta(double delta);
+
 void incPhi(double delta){
 	phi += delta;
-	while(phi > PI){
-		phi -= PI;
+	phi = fmod(phi, 2.0*M_PI);
+	/*while(phi > M_PI){
+		phi -= M_PI;
 	}
 	
 	while(phi < 0){
-		phi += PI;
-	}
+		phi += M_PI;
+	}*/
 }
 void incTheta(double delta){
 	theta += delta;
-	theta = fmod(theta, PI_2);
+	theta = fmod(theta, 2.0*M_PI);
+	/*while(theta < 0){
+		theta += M_PI*2.0;
+	}
+	
+	while(theta >= M_PI*2.0){
+		theta -= M_PI*2.0;
+	}*/
 }
 
 void keyboard(unsigned char key, int x, int y)
@@ -172,18 +184,96 @@ void mouse(int button, int state, int x, int y){
 void motion(int x, int y){
 	int deltaX = x - mouseX,
 		deltaY = y - mouseY;
-		
-	printf("@ %f, %f\n", centerX, centerY);
 	
-	incTheta(-(double)deltaX/100.0);
-	incPhi(-(double)deltaY/100.0);
-	
-	printf("@ %f, %f\n\n", centerX, centerY);
+	incTheta((double)deltaX/100.0);
+	incPhi((double)deltaY/100.0);
 	
 	mouseX = x;
 	mouseY = y;
 	
 	glutPostRedisplay();
+}
+
+#define SPHERE_N (20)
+
+void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfloat ks, GLfloat n)
+{
+    GLfloat ambient[] = {ka*r,ka*g,ka*b,1.0};
+    GLfloat diffuse[] = {kd*r,kd*g,kd*b,1.0};
+    GLfloat specular[] = {ks,ks,ks,1.0};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, n);
+}
+
+void displaySphere(void)
+{
+    /* Clear all pixels */
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+    
+    double dist = 250.0,
+		x = dist*sin(theta)*sin(phi),
+		y = dist*cos(phi),
+		z = dist*cos(theta)*sin(phi);
+    
+    gluLookAt(200.0, 200.0, 1000.0, 200.0, 200.0, 0.0, 0.0, 1.0, 0.0);
+
+    /* Set up other things you may need */
+    /* ... */
+    
+    GLfloat lightPos[] = {-200.0, 600.0, 1500.0, 1.0};
+    GLfloat lightAmbient[] = {1.0, 1.0, 1.0, 1.0};
+    
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, lightAmbient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightAmbient);
+
+    setGlMaterial(0.0f,0.0f,1.0f,0.2,0.7,0.5,64);
+    glPushMatrix();
+    glTranslated(90,320,100);
+    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    glPopMatrix();
+
+    setGlMaterial(0.0f,1.0f,0.0f,0.2,0.3,0.5,8);
+    glPushMatrix();
+    glTranslated(210,270,300);
+    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    glPopMatrix();
+
+    setGlMaterial(1.0f,0.0f,0.0f,0.2,0.7,0.8,32);
+    glPushMatrix();
+    glTranslated(290,170,150);
+    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    glPopMatrix();
+
+    setGlMaterial(1.0f,0.8f,0.0f,0.2,0.8,0.0,1);
+    glPushMatrix();
+    glTranslated(140,220,400);
+    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    glPopMatrix();
+
+    setGlMaterial(1.0f,0.5f,0.0f,0.2,0.8,0.5,32);
+    glPushMatrix();
+    glTranslated(110,130,200);
+    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    glPopMatrix();
+
+    /* Whatever clean up you need */
+    /* ... */
+
+    glutSwapBuffers();
+}
+
+void reshapeSphere(int w, int h)
+{
+    glViewport(0,0, (GLsizei) w, (GLsizei) h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,500,1000);
+    glMatrixMode(GL_MODELVIEW);
 }
 
 int main(int argc, char** argv)
@@ -212,7 +302,7 @@ int main(int argc, char** argv)
 
     /* Select clearing (background) color */
     glClearColor(0.0,0.0,0.0,0.0);
-    glShadeModel(GL_FLAT);
+    glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
 
     /* Register GLUT callback functions */
