@@ -34,8 +34,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-
-#include "glslshaders.h"
  
 double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
 	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
@@ -45,76 +43,8 @@ double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
 	
 int mouseX = 0, mouseY = 0;
 
-/*
- * Input handling
- */
-
-void mouse(int button, int state, int x, int y){
-	if(state == GLUT_DOWN){
-		mouseX = x;
-		mouseY = y;
-	}
-}
-
-void motion(int x, int y){
-	int deltaX = x - mouseX,
-		deltaY = y - mouseY;
-	
-	incTheta((double)deltaX/100.0);
-	incPhi((double)deltaY/100.0);
-	
-	mouseX = x;
-	mouseY = y;
-	
-	glutPostRedisplay();
-}
-
-void keyboard(unsigned char key, int x, int y)
-{
-	printf("Key: '%c'\n", key);
-	
-    switch (key) {
-        case 'q':
-        case 'Q':
-        case 27: // ESC key
-            printf("Exiting...\n");
-            exit(0);
-            break;
-		case 'a':
-			incTheta(-0.1);
-			glutPostRedisplay();
-			break;
-		case 'd':
-			incTheta(0.1);
-			glutPostRedisplay();
-			break;
-		case 'w':
-			incPhi(0.1);
-			glutPostRedisplay();
-			break;
-		case 's':
-			incPhi(-0.1);
-			glutPostRedisplay();
-			break;
-    }
-}
-
-/*
- * Rotation-helpers
- */
-void incPhi(double delta){
-	phi += delta;
-	phi = fmod(phi, 2.0*M_PI);
-}
-void incTheta(double delta){
-	theta += delta;
-	theta = fmod(theta, 2.0*M_PI);
-}
-
-/*
- * Cube-drawing
- */
 void drawCube(void){
+
 	static const GLfloat cubeVertices[8*3] = {
 		-1,-1,-1,
 		-1,-1, 1,
@@ -158,7 +88,7 @@ void drawCube(void){
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
  
-void displayCube(void)
+void display(void)
 {
     /* Clear all pixels */
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -174,7 +104,48 @@ void displayCube(void)
     glutSwapBuffers();
 }
 
-void reshapeCube(int w, int h)
+void incTheta(double delta);
+
+void incPhi(double delta){
+	phi += delta;
+	phi = fmod(phi, 2.0*M_PI);
+}
+void incTheta(double delta){
+	theta += delta;
+	theta = fmod(theta, 2.0*M_PI);
+}
+
+void keyboard(unsigned char key, int x, int y)
+{
+	printf("Key: '%c'\n", key);
+	
+    switch (key) {
+        case 'q':
+        case 'Q':
+        case 27: // ESC key
+            printf("Exiting...\n");
+            exit(0);
+            break;
+		case 'a':
+			incTheta(-0.1);
+			glutPostRedisplay();
+			break;
+		case 'd':
+			incTheta(0.1);
+			glutPostRedisplay();
+			break;
+		case 'w':
+			incPhi(0.1);
+			glutPostRedisplay();
+			break;
+		case 's':
+			incPhi(-0.1);
+			glutPostRedisplay();
+			break;
+    }
+}
+
+void reshape(int w, int h)
 {
     glViewport(0,0, (GLsizei) w, (GLsizei) h);
     glMatrixMode(GL_PROJECTION);
@@ -183,10 +154,27 @@ void reshapeCube(int w, int h)
     glMatrixMode(GL_MODELVIEW);
 }
 
-/*
- * Sphere-drawing
- */
-const int SPHERE_N = 20;
+void mouse(int button, int state, int x, int y){
+	if(state == GLUT_DOWN){
+		mouseX = x;
+		mouseY = y;
+	}
+}
+
+void motion(int x, int y){
+	int deltaX = x - mouseX,
+		deltaY = y - mouseY;
+	
+	incTheta((double)deltaX/100.0);
+	incPhi((double)deltaY/100.0);
+	
+	mouseX = x;
+	mouseY = y;
+	
+	glutPostRedisplay();
+}
+
+#define SPHERE_N (20)
 
 void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfloat ks, GLfloat n)
 {
@@ -248,8 +236,7 @@ void displaySphere(void)
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     
-    // gluLookAt(200.0, 200.0, 1000.0, 200.0, 200.0, 200.0, 0.0, 1.0, 0.0);
-	gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
+    gluLookAt(200.0, 200.0, 1000.0, 200.0, 200.0, 0.0, 0.0, 1.0, 0.0);
     
     glRotated(theta * 180.0/M_PI, upX, upY, upZ);
     glRotated(phi * 180.0/M_PI, 1.0, 0.0, 0.0);
@@ -266,27 +253,6 @@ void reshapeSphere(int w, int h)
     glLoadIdentity();
     gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,500,1000);
     glMatrixMode(GL_MODELVIEW);
-}
-
-/*
- * Initializations
- */
-void initCube(){
-	eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
-	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
-	upX = 0.0, upY = 1.0, upZ = 0.0;
-	
-	glutDisplayFunc(displayCube);
-    glutReshapeFunc(reshapeCube);
-}
-
-void initSphere(){ 
-	eyeX = 200.0, eyeY = 200.0, eyeZ = 1000.0,
-	centerX = 200.0, centerY = 200.0, centerZ = 200.0,
-	upX = 0.0, upY = 1.0, upZ = 0.0;
-	
-	glutDisplayFunc(displaySphere);
-    glutReshapeFunc(reshapeSphere);
 }
 
 int main(int argc, char** argv)
@@ -316,18 +282,20 @@ int main(int argc, char** argv)
     glClearColor(0.0,0.0,0.0,0.0);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
+<<<<<<< HEAD
+	//glEnable(GL_COLOR_MATERIAL);
+=======
     //glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
-	
-	initGLSLProgram("vertexshader.glsl","fragmentshader.glsl");
+>>>>>>> 1d20e12bf3d31add3f87bd1bd810d7806bb81d0e
 
     /* Register GLUT callback functions */
+    glutDisplayFunc(displaySphere);
     glutKeyboardFunc(keyboard);
+    glutReshapeFunc(reshapeSphere);
 	glutMotionFunc(motion);
 	glutMouseFunc(mouse);
-	
-	initSphere();
 
     glutMainLoop();
 
