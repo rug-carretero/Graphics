@@ -4,6 +4,8 @@
 #ifndef OPENGLFRAMEWORK_GLSLSHADERS_H
 #define OPENGLFRAMEWORK_GLSLSHADERS_H
 
+#define GL_GLEXT_PROTOTYPES
+
 #if defined(NEED_GLEW)
 #include "glew.h"
 #endif

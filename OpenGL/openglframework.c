@@ -41,9 +41,10 @@ double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
 	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
 	upX = 0.0, upY = 1.0, upZ = 0.0,
 	
-	phi = 0.0, theta = 0.0, dist = 5.0;
+	phi = 0.0, theta = 0.0, dist = 5.0,
+	fovy = 60.0;
 	
-int mouseX = 0, mouseY = 0;
+int mouseX = 0, mouseY = 0, width, height;
 
 /*
  * Rotation-helpers
@@ -79,10 +80,10 @@ void motion(int x, int y){
 		centerY += deltaY;
 		eyeY += deltaY;
 	}else if(glutGetModifiers() == GLUT_ACTIVE_SHIFT){
-		eyeZ += deltaY;
+		fovy += deltaY;
 	}else{
-		incTheta((double)deltaX/100.0);
-		incPhi((double)deltaY/100.0);
+		incTheta((double)deltaX/200.0);
+		incPhi((double)deltaY/200.0);
 	}
 	
 	mouseX = x;
@@ -102,21 +103,17 @@ void keyboard(unsigned char key, int x, int y)
         break;
 			
 		case 'a':
-			//
 			eyeX -= 10.0;
 			centerX -= 10.0;
 		break;
 		case 'd':
-			//
 			eyeX += 10.0;
 			centerX += 10.0;
 		break;
 		case 'w':
-			//
 			eyeZ -= 10.0;
 		break;
 		case 's':
-			//
 			eyeZ += 10.0;
 		break;
     }
@@ -157,11 +154,8 @@ void drawCube(void){
 	};
 
 	static const GLubyte cubeIndices[3*12] = {
-		//        0,1, 0,2, 0,3,                /* From three minusses to two minusses */
-		//        1,4, 1,5, 2,4, 2,6, 3,5, 3,6, /* From two minusses to one minus */
-		//        4,7, 5,7, 6,7                 /* From one minus to zero minusses */
 		0,1,2, 4,1,2, //left panel
-		5,6,7, 3,5,6, //right panel
+		7,5,6, 3,5,6, //right panel
 		0,1,3, 5,1,3, //bottom panel
 		0,2,6, 0,3,6, //back panel
 		2,6,7, 2,4,7, //top
@@ -169,20 +163,22 @@ void drawCube(void){
 	};
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, cubeVertices);
-
+	
+	GLenum mode = GL_LINES;
+	
 	// draw a cube
     glColor3f(0.0f,0.0f,1.0f);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices);
+	glDrawElements(mode, 6, GL_UNSIGNED_BYTE, cubeIndices);
 	glColor3f(1.0f,0.0f,0.0f);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices+6);
+	glDrawElements(mode, 6, GL_UNSIGNED_BYTE, cubeIndices+6);
 	glColor3f(0.0f,1.0f,0.0f);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices+12);
+	glDrawElements(mode, 6, GL_UNSIGNED_BYTE, cubeIndices+12);
 	glColor3f(1.0f,1.0f,0.0f);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices+18);
+	glDrawElements(mode, 6, GL_UNSIGNED_BYTE, cubeIndices+18);
 	glColor3f(0.0f,1.0f,1.0f);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices+24);
-	glColor3f(0.1f,0.0f,1.0f);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, cubeIndices+30);
+	glDrawElements(mode, 6, GL_UNSIGNED_BYTE, cubeIndices+24);
+	glColor3f(1.0f,0.0f,1.0f);
+	glDrawElements(mode, 6, GL_UNSIGNED_BYTE, cubeIndices+30);
 
 	// deactivate vertex arrays after drawing
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -209,8 +205,8 @@ void reshapeCube(int w, int h)
     glViewport(0,0, (GLsizei) w, (GLsizei) h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(60.0,(GLdouble)w/(GLdouble)h,1.5,20.0);
-    glMatrixMode(GL_PROJECTION);
+    gluPerspective(fovy,(GLdouble)w/(GLdouble)h,1.5,20.0);
+    glMatrixMode(GL_MODELVIEW);
 }
 
 /*
@@ -269,10 +265,19 @@ void drawSpheres(void){
     glPopMatrix();
 }
 
+void rePerspectifySphere(){
+	glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(fovy, (GLdouble)width/(GLdouble)height, 200, 10000);
+    glMatrixMode(GL_MODELVIEW);
+}
+
 void displaySphere(void)
 {
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+	
+	rePerspectifySphere();
 	
     /* Clear all pixels */
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -281,8 +286,10 @@ void displaySphere(void)
     // gluLookAt(200.0, 200.0, 1000.0, 200.0, 200.0, 200.0, 0.0, 1.0, 0.0);
 	gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
     
+    glTranslated(eyeX, eyeY, eyeZ);
     glRotated(theta * 180.0/M_PI, upX, upY, upZ);
     glRotated(phi * 180.0/M_PI, 1.0, 0.0, 0.0);
+    glTranslated(-eyeX, -eyeY, -eyeZ);
 	
 	drawSpheres();
 
@@ -292,10 +299,10 @@ void displaySphere(void)
 void reshapeSphere(int w, int h)
 {
     glViewport(0,0, (GLsizei) w, (GLsizei) h);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,500,1000);
-    glMatrixMode(GL_MODELVIEW);
+    width = w;
+    height = h;
+    fovy = 2.0*atan2(height/2.0,1000.0)*180.0/M_PI;
+    rePerspectifySphere();
 }
 
 /*
@@ -304,7 +311,7 @@ void reshapeSphere(int w, int h)
 void initCube(){
 	eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
 	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
-	upX = 0.0, upY = 1.0, upZ = 0.0;
+	upX = 0.0, upY = 1.0, upZ = 0.0, fovy = 60.0;
 	
 	glutDisplayFunc(displayCube);
     glutReshapeFunc(reshapeCube);
@@ -313,7 +320,8 @@ void initCube(){
 void initSphere(){ 
 	eyeX = 200.0, eyeY = 200.0, eyeZ = 1000.0,
 	centerX = 200.0, centerY = 200.0, centerZ = 200.0,
-	upX = 0.0, upY = 1.0, upZ = 0.0;
+	upX = 0.0, upY = 1.0, upZ = 0.0, 
+	fovy = 2.0*atan2(height/2.0,1000.0)*180.0/M_PI;
 	
 	glutDisplayFunc(displaySphere);
     glutReshapeFunc(reshapeSphere);
@@ -346,11 +354,8 @@ int main(int argc, char** argv)
     glClearColor(0.0,0.0,0.0,0.0);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_COLOR_MATERIAL);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
 	
-	initGLSLProgram("vertexshader.glsl","fragmentshader.glsl");
+	//initGLSLProgram("normalvertex.glsl","normalfragment.glsl");
 
     /* Register GLUT callback functions */
     glutKeyboardFunc(keyboard);
@@ -358,7 +363,7 @@ int main(int argc, char** argv)
 	glutMotionFunc(motion);
 	glutMouseFunc(mouse);
 	
-	initSphere();
+	initCube();
 
     glutMainLoop();
 

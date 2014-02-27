@@ -1,1 +1,2 @@
-openglframework.o: openglframework.c
+openglframework.o: openglframework.c glslshaders.h
+glslshaders.o: glslshaders.c glslshaders.h
