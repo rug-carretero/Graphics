@@ -17,8 +17,6 @@
 #include "scene.h"
 #include "material.h"
 
-#include <iostream>
-
 Hit Scene::trace(const Ray& ray, Object ** object){
 	// Find hit object and distance
     Hit min_hit(std::numeric_limits<double>::infinity(),Vector());
@@ -163,7 +161,6 @@ void Scene::normalRender(Image &img){
 }
 
 void Scene::render(Image &img){
-	cout << "I'mma renderin'!" << endl;
 	switch(renderMode){
 		case RenderPhong: phongRender(img); break;
 		case RenderZBuffer: zRender(img); break;
