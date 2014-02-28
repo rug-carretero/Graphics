@@ -2,6 +2,7 @@
 *.dll
 *.exe
 *.o
+*/*.o
 
 openglframework
 make.dep

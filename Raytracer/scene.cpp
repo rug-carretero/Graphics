@@ -17,8 +17,10 @@
 #include "scene.h"
 #include "material.h"
 
-double Scene::zbufferTrace(const Ray &ray){
-    // Find hit object and distance
+#include <iostream>
+
+Hit Scene::trace(const Ray& ray, Object ** object){
+	// Find hit object and distance
     Hit min_hit(std::numeric_limits<double>::infinity(),Vector());
     Object *obj = NULL;
     for (unsigned int i = 0; i < objects.size(); ++i) {
@@ -30,27 +32,25 @@ double Scene::zbufferTrace(const Ray &ray){
     }
 
     // No hit? Return negative.
-    if (!obj) return -1.0;
+    if (!obj){
+		if(object) *object = NULL;
+		return Hit::NO_HIT();
+	}
+    
+    if(object){
+		*object = obj;
+	}
 
-    return min_hit.t;
+    return min_hit;
 }
-
 
 Color Scene::phongTrace(const Ray &ray)
 {
-    // Find hit object and distance
-    Hit min_hit(std::numeric_limits<double>::infinity(),Vector());
-    Object *obj = NULL;
-    for (unsigned int i = 0; i < objects.size(); ++i) {
-        Hit hit(objects[i]->intersect(ray));
-        if (hit.t<min_hit.t) {
-            min_hit = hit;
-            obj = objects[i];
-        }
-    }
-
-    // No hit? Return background color.
-    if (!obj) return Color(0.0, 0.0, 0.0);
+    Object * obj;
+    
+    Hit min_hit = trace(ray, &obj);
+    
+    if(!obj) return Vector(0.0, 0.0, 0.0);
 
     Material *material = obj->material;            //the hit objects material
     Point hit = ray.at(min_hit.t);                 //the hit point
@@ -111,7 +111,7 @@ void Scene::zRender(Image &img){
 			Point pixel(x+0.5, h-1-y+0.5, 0);
 			Ray ray(eye, (pixel-eye).normalized());
 			
-			double dist = zbufferTrace(ray);
+			double dist = trace(ray, NULL).t;
 			
 			if (dist >= 0){
 				if(dist < min) min = dist;
@@ -124,7 +124,7 @@ void Scene::zRender(Image &img){
         for (int x = 0; x < w; x++) {
             Point pixel(x+0.5, h-1-y+0.5, 0);
             Ray ray(eye, (pixel-eye).normalized());
-            double dist = zbufferTrace(ray);
+            double dist = trace(ray, NULL).t;
             dist = dist < 0 ? 0 : 1.0 - ((dist - min) / (max - min));
             Color col = Color(dist,dist,dist);
             img(x,y) = col;
@@ -147,27 +147,6 @@ void Scene::phongRender(Image &img)
     }
 }
 
-Vector Scene::normalTrace(const Ray& ray){
-
-    // Find hit object and distance
-    Hit min_hit(std::numeric_limits<double>::infinity(),Vector());
-    Object *obj = NULL;
-    for (unsigned int i = 0; i < objects.size(); ++i) {
-        Hit hit(objects[i]->intersect(ray));
-        if (hit.t<min_hit.t) {
-            min_hit = hit;
-            obj = objects[i];
-        }
-    }
-
-    // No hit? Return negative.
-    if (!obj) return Vector(0, 0, 0);
-
-    min_hit.N = min_hit.N.normalized();
-	
-	return (min_hit.N + 1.0)/2.0;
-}
-
 void Scene::normalRender(Image &img){
   int w = img.width();
     int h = img.height();
@@ -175,7 +154,8 @@ void Scene::normalRender(Image &img){
         for (int x = 0; x < w; x++) {
             Point pixel(x+0.5, h-1-y+0.5, 0);
             Ray ray(eye, (pixel-eye).normalized());
-            Color col = normalTrace(ray);
+            //Color col = normalTrace(ray);
+            Color col = (trace(ray, NULL).N.normalized() + 1.0)/2.0;
             col.clamp();
             img(x,y) = col;
         }
@@ -183,6 +163,7 @@ void Scene::normalRender(Image &img){
 }
 
 void Scene::render(Image &img){
+	cout << "I'mma renderin'!" << endl;
 	switch(renderMode){
 		case RenderPhong: phongRender(img); break;
 		case RenderZBuffer: zRender(img); break;

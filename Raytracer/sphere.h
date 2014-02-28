@@ -18,6 +18,7 @@
 #define SPHERE_H_115209AE
 
 #include "object.h"
+// #include "hit.h"
 
 class Sphere : public Object
 {

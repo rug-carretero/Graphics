@@ -32,9 +32,8 @@ private:
     void phongRender(Image &img);
     void normalRender(Image &img);
     void zRender(Image &img);
-    double zbufferTrace(const Ray &ray);
     Color phongTrace(const Ray &ray);
-	Vector normalTrace(const Ray& ray);
+	Hit trace(const Ray& ray, Object ** obj);
 public:
     void render(Image &img);
     void addObject(Object *o);

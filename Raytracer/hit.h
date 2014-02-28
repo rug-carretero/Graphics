@@ -31,7 +31,15 @@ public:
         : t(t), N(normal)
     { }
 
-    static const Hit NO_HIT() { static Hit no_hit(std::numeric_limits<double>::quiet_NaN(),Vector(std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN())); return no_hit; }
+    static const Hit NO_HIT() { 
+		static Hit no_hit(std::numeric_limits<double>::quiet_NaN(),
+			Vector(std::numeric_limits<double>::quiet_NaN(),
+			std::numeric_limits<double>::quiet_NaN(),
+			std::numeric_limits<double>::quiet_NaN())
+		); 
+		return no_hit; 
+	}
 };
+
 
 #endif /* end of include guard: HIT_H_ */
