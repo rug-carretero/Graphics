@@ -17,13 +17,15 @@
 #include "scene.h"
 #include "material.h"
 
+#include <iostream>
+
 Hit Scene::trace(const Ray& ray, Object ** object){
 	// Find hit object and distance
     Hit min_hit(std::numeric_limits<double>::infinity(),Vector());
     Object *obj = NULL;
     for (unsigned int i = 0; i < objects.size(); ++i) {
         Hit hit(objects[i]->intersect(ray));
-        if (hit.t<min_hit.t) {
+        if (hit.t < min_hit.t) {
             min_hit = hit;
             obj = objects[i];
         }
@@ -83,8 +85,13 @@ Color Scene::phongTrace(const Ray &ray)
 	Color specular = Color(0,0,0);
 
     for (size_t i = 0; i < lights.size(); i++){
+		
 		Vector Lm = (lights[i]->position - hit).normalized();
 		Vector Rm = 2* Lm.dot(N) * N - Lm;
+		
+		Object * hobj = NULL;
+		Hit light2obj = trace(Ray(hit, -Lm), &hobj);
+		if(light2obj.t < 0) break; // light-ray hits object: shadow
 		
 		double diffuse = material->kd * max(0.0,Lm.dot(N));
 		
