@@ -93,8 +93,8 @@ Color Scene::phongTrace(const Ray &ray)
 		Il += material->ka * lights[i]->color;
 		
 		Object * hobj = NULL;
-		Hit light2obj = trace(Ray(hit, -Lm), &hobj);
-		if(light2obj.t < 0) break; // light-ray hits object: shadow
+		trace(Ray(hit, -Lm), &hobj);
+		if(hobj != obj) break; // light-ray hits object: shadow
 		
 		/* diffuse */
 		double diffuse = material->kd * max(0.0,Lm.dot(N));
