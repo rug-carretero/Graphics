@@ -29,6 +29,7 @@ private:
     std::vector<Object*> objects;
     std::vector<Light*> lights;
     Triple eye;
+	
     void phongRender(Image &img);
     void normalRender(Image &img);
     void zRender(Image &img);
@@ -41,7 +42,9 @@ public:
     void setEye(Triple e);
     unsigned int getNumObjects() { return objects.size(); }
     unsigned int getNumLights() { return lights.size(); }
+	
 	enum RenderModes {RenderPhong, RenderZBuffer, RenderNormal} renderMode;
+	bool renderShadows;
 };
 
 #endif /* end of include guard: SCENE_H_KNBLQLP6 */

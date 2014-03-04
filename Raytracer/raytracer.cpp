@@ -113,6 +113,18 @@ enum Scene::RenderModes parseRenderMode(const YAML::Node& node){
 	return Scene::RenderPhong;
 }
 
+bool parseBool(const YAML::Node& node){
+	string val;
+	node >> val;
+	
+	for(size_t i = 0; i < val.length(); i++){
+		val[i] = tolower(val[i]);
+	}
+	
+	if(val == "true" || val == "yes" || val == "1") return true;
+	return false;
+}
+
 /*
 * Read a scene from file
 */
@@ -138,6 +150,9 @@ bool Raytracer::readScene(const std::string& inputFilename)
             scene->setEye(parseTriple(doc["Eye"]));
 			if(const YAML::Node * rMode = doc.FindValue("RenderMode")){
 				scene->renderMode = parseRenderMode(*rMode);
+			}
+			if(const YAML::Node * rShadows = doc.FindValue("Shadows")){
+				scene->renderShadows = parseBool(*rShadows);
 			}
 
             // Read and parse the scene objects
