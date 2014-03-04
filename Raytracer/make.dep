@@ -1,15 +1,3 @@
-main.o: main.cpp raytracer.h triple.h light.h scene.h object.h ray.h \
- hit.h image.h yaml/yaml.h yaml/crt.h yaml/parser.h yaml/node.h \
- yaml/conversion.h yaml/null.h yaml/exceptions.h yaml/mark.h \
- yaml/iterator.h yaml/noncopyable.h yaml/parserstate.h yaml/nodeimpl.h \
- yaml/nodeutil.h yaml/nodereadimpl.h yaml/emitter.h yaml/emittermanip.h \
- yaml/ostream.h yaml/stlemitter.h
-raytracer.o: raytracer.cpp raytracer.h triple.h light.h scene.h object.h \
- ray.h hit.h image.h yaml/yaml.h yaml/crt.h yaml/parser.h yaml/node.h \
- yaml/conversion.h yaml/null.h yaml/exceptions.h yaml/mark.h \
- yaml/iterator.h yaml/noncopyable.h yaml/parserstate.h yaml/nodeimpl.h \
- yaml/nodeutil.h yaml/nodereadimpl.h yaml/emitter.h yaml/emittermanip.h \
- yaml/ostream.h yaml/stlemitter.h sphere.h plane.h triangle.h material.h
 sphere.o: sphere.cpp sphere.h object.h triple.h ray.h hit.h
 light.o: light.cpp light.h triple.h
 material.o: material.cpp material.h triple.h

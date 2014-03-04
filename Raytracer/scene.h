@@ -45,6 +45,7 @@ public:
 	
 	enum RenderModes {RenderPhong, RenderZBuffer, RenderNormal} renderMode;
 	bool renderShadows;
+	int superSamples;
 };
 
 #endif /* end of include guard: SCENE_H_KNBLQLP6 */

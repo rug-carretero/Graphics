@@ -146,19 +146,27 @@ void Scene::phongRender(Image &img)
 {
     int w = img.width();
     int h = img.height();
+	double sqrtSamples = sqrt((double)superSamples);
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
-            Point pixel(x+0.5, h-1-y+0.5, 0);
-            Ray ray(eye, (pixel-eye).normalized());
-            Color col = phongTrace(ray);
-            col.clamp();
-            img(x,y) = col;
+			Color col = Color(0.0, 0.0, 0.0);
+			for(int aax = 0; aax*aax < superSamples; aax++){
+				for(int aay = 0; aay*aay < superSamples; aay++){
+					double xx = x + sqrtSamples*.5;
+					double yy = y + sqrtSamples*.5;
+					Point pixel(xx, yy, 0);
+					Ray ray(eye, (pixel-eye).normalized());
+					col += phongTrace(ray);
+				}
+			}
+			(col / (double)superSamples).clamp();
+			img(x,y) = col;
         }
     }
 }
 
 void Scene::normalRender(Image &img){
-  int w = img.width();
+int w = img.width();
     int h = img.height();
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
