@@ -89,16 +89,19 @@ Color Scene::phongTrace(const Ray &ray)
 		Vector Lm = (lights[i]->position - hit).normalized();
 		Vector Rm = 2* Lm.dot(N) * N - Lm;
 		
+		/* ambient */
+		Il += material->ka * lights[i]->color;
+		
 		Object * hobj = NULL;
 		Hit light2obj = trace(Ray(hit, -Lm), &hobj);
 		if(light2obj.t < 0) break; // light-ray hits object: shadow
 		
+		/* diffuse */
 		double diffuse = material->kd * max(0.0,Lm.dot(N));
-		
 		Il +=  diffuse * lights[i]->color;
-		Il += material->ka * lights[i]->color;
 		
-	       specular += material->ks * pow(max(0.0,Rm.dot(V)),material->n) * lights[i]->color;
+		/* specular */
+	    specular += material->ks * pow(max(0.0,Rm.dot(V)),material->n) * lights[i]->color;
     }
 
     return color * Il + specular;
