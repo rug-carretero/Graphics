@@ -46,6 +46,7 @@ public:
 	enum RenderModes {RenderPhong, RenderZBuffer, RenderNormal} renderMode;
 	bool renderShadows;
 	int superSamples;
+	int reflectRecursion;
 	
     Triple eye;
     Triple center;

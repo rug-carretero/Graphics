@@ -176,6 +176,13 @@ bool Raytracer::readScene(const std::string& inputFilename)
 				scene->width = 400;
 				scene->height = 400;
 			}
+			
+			const YAML::Node * refRec = doc.FindValue("MaxRecursionDepth");
+			if(refRec){
+				*refRec >> scene->reflectRecursion;
+			}else{
+				scene->reflectRecursion = 0;
+			}
 
             // Read and parse the scene objects
             const YAML::Node& sceneObjects = doc["Objects"];
