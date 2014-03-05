@@ -166,13 +166,16 @@ void Scene::phongRender(Image &img)
 }
 
 void Scene::normalRender(Image &img){
-int w = img.width();
+	int w = img.width();
     int h = img.height();
+	Vector right = (center - eye).cross(up).normalized()*up.length();
+	cout << "eye: " << eye << ", center: " << center << ", up: " << up << ", right: " << right << ", in: " << (center - eye) << endl;
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
-            Point pixel(x+0.5 + (center.x -w/2), h-1-(y + (center.y -h/2))+0.5, 0);
-            pixel = pixel * up.length();
-            Ray ray(eye, (pixel - eye).normalized());
+            // Point pixel(x+.5 + center.x - (double)w/2.0, h-1-y+.5 + center.y - (double)h/2.0, 0);
+			Point pixel(x+.5, h-1-y+.5, 0);
+			pixel += center - right*(double)width/2.0 - up*(double)height/2.0;
+			Ray ray(eye, (pixel - eye).normalized());
             //Color col = normalTrace(ray);
             Color col = (trace(ray, NULL).N.normalized() + 1.0)/2.0;
             col.clamp();
