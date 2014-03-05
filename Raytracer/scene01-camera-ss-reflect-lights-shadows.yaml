@@ -12,16 +12,18 @@
 #  The example scene description should largely speak for itself. By now
 #  it should be clear that the #-character can be used to insert comments.
 
-Eye: [200,200,1000]  
+Camera:
+    eye: [200,200,1000]
+    center: [200,200,0]
+    up: [0,1,0]
+    viewSize: [400,400]
 
 Shadows: true
+MaxRecursionDepth: 2
 SuperSampling:
-  factor: 9
-  
-Camera:
-  eye: [200, 200, 1000]
-  center: []
-  up: []
+  factor: 4
+
+RenderMode: normal
 
 Lights:
 - position: [-200,600,1500]

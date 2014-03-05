@@ -28,7 +28,6 @@ class Scene
 private:
     std::vector<Object*> objects;
     std::vector<Light*> lights;
-    Triple eye;
 	
     void phongRender(Image &img);
     void normalRender(Image &img);
@@ -46,6 +45,11 @@ public:
 	enum RenderModes {RenderPhong, RenderZBuffer, RenderNormal} renderMode;
 	bool renderShadows;
 	int superSamples;
+	
+    Triple eye;
+    Triple center;
+    Vector up;
+    int width, height;
 };
 
 #endif /* end of include guard: SCENE_H_KNBLQLP6 */

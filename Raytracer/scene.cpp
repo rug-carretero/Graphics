@@ -150,8 +150,8 @@ void Scene::phongRender(Image &img)
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
 			Color col = Color(0.0, 0.0, 0.0);
-			double xx = x + sqrtSamples;
-			double yy = h - y - sqrtSamples;
+			double xx = x + sqrtSamples * .5;
+			double yy = h - y - sqrtSamples * .5;
 			for(int aax = 0; aax*aax < superSamples; aax++){
 				for(int aay = 0; aay*aay < superSamples; aay++){
 					Point pixel(xx + sqrtSamples*aax, yy - sqrtSamples*aay, 0);
@@ -159,7 +159,7 @@ void Scene::phongRender(Image &img)
 					col += phongTrace(ray) / (double)superSamples;
 				}
 			}
-			col.clamp();
+			(col).clamp();
 			img(x,y) = col;
         }
     }
@@ -170,8 +170,9 @@ int w = img.width();
     int h = img.height();
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
-            Point pixel(x+0.5, h-1-y+0.5, 0);
-            Ray ray(eye, (pixel-eye).normalized());
+            Point pixel(x+0.5 + (center.x -w/2), h-1-(y + (center.y -h/2))+0.5, 0);
+            pixel = pixel * up.length();
+            Ray ray(eye, (pixel - eye).normalized());
             //Color col = normalTrace(ray);
             Color col = (trace(ray, NULL).N.normalized() + 1.0)/2.0;
             col.clamp();

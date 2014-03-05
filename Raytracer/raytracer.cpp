@@ -147,7 +147,6 @@ bool Raytracer::readScene(const std::string& inputFilename)
             parser.GetNextDocument(doc);
 
             // Read scene configuration options
-            scene->setEye(parseTriple(doc["Eye"]));
 			if(const YAML::Node * rMode = doc.FindValue("RenderMode")){
 				scene->renderMode = parseRenderMode(*rMode);
 			}
@@ -161,6 +160,21 @@ bool Raytracer::readScene(const std::string& inputFilename)
 				cout << scene->superSamples << endl;
             }else{
 				scene->superSamples = 1;
+			}
+			
+			const YAML::Node * camera = doc.FindValue("Camera");
+			if(camera){
+				(*camera)["eye"] >> scene->eye;
+				(*camera)["center"] >> scene->center;
+				(*camera)["up"] >> scene->up;
+				(*camera)["viewSize"][0] >> scene->width;
+				(*camera)["viewSize"][1] >> scene->height;
+			}else{
+				scene->setEye(parseTriple(doc["Eye"]));
+				scene->center = Triple(0, 0, 0);
+				scene->up = Vector(0, 1, 0);
+				scene->width = 400;
+				scene->height = 400;
 			}
 
             // Read and parse the scene objects
@@ -203,7 +217,7 @@ bool Raytracer::readScene(const std::string& inputFilename)
 
 void Raytracer::renderToFile(const std::string& outputFilename)
 {
-    Image img(400,400);
+    Image img(scene->width,scene->height);
     cout << "Tracing..." << endl;
 	cout << "Render mode: ";
 	switch(scene->renderMode){
