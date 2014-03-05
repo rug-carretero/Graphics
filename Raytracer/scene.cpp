@@ -60,77 +60,79 @@ Color Scene::phongReflect(const Ray &ray, int level, Object * src){
 
 Color Scene::phongTrace(const Ray &ray, int level)
 {
-    Object * obj;
+  Object * obj;
     
-    Hit min_hit = trace(ray, &obj);
+  Hit min_hit = trace(ray, &obj);
     
-    if(!obj) return Vector(0.0, 0.0, 0.0);
+  if(!obj) return Vector(0.0, 0.0, 0.0);
 
-    Material *material = obj->material;            //the hit objects material
-    Point hit = ray.at(min_hit.t);                 //the hit point
-    Vector N = min_hit.N.normalized();             //the normal at hit point
-    Vector V = -ray.D.normalized();                //the view vector
+  Material *material = obj->material;            //the hit objects material
+  Point hit = ray.at(min_hit.t);                 //the hit point
+  Vector N = min_hit.N.normalized();             //the normal at hit point
+  Vector V = -ray.D.normalized();                //the view vector
 
 
-    /****************************************************
-    * This is where you should insert the color
-    * calculation (Phong model).
-    *
-    * Given: material, hit, N, V, lights[]
-    * Sought: color
-    *
-    * Hints: (see triple.h)
-    *        Triple.dot(Vector) dot product
-    *        Vector+Vector      vector sum
-    *        Vector-Vector      vector difference
-    *        Point-Point        yields vector
-    *        Vector.normalize() normalizes vector, returns length
-    *        double*Color        scales each color component (r,g,b)
-    *        Color*Color        dito
-    *        pow(a,b)           a to the power of b
-    ****************************************************/
+  /****************************************************
+   * This is where you should insert the color
+   * calculation (Phong model).
+   *
+   * Given: material, hit, N, V, lights[]
+   * Sought: color
+   *
+   * Hints: (see triple.h)
+   *        Triple.dot(Vector) dot product
+   *        Vector+Vector      vector sum
+   *        Vector-Vector      vector difference
+   *        Point-Point        yields vector
+   *        Vector.normalize() normalizes vector, returns length
+   *        double*Color        scales each color component (r,g,b)
+   *        Color*Color        dito
+   *        pow(a,b)           a to the power of b
+   ****************************************************/
 
-    //see also http://en.wikipedia.org/wiki/Phong_reflection_model
+  //see also http://en.wikipedia.org/wiki/Phong_reflection_model
 
-    Color color = material->color;
+  Color color = material->color;
 
-    Color Il = Color(0,0,0);
+  Color Il = Color(0,0,0);
 
-	Color specular = Color(0,0,0);
+  Color specular = Color(0,0,0);
 
-    for (size_t i = 0; i < lights.size(); i++){
+  for (size_t i = 0; i < lights.size(); i++){
 		
-		Vector Lm = (lights[i]->position - hit).normalized();
-		Vector Rm = 2* Lm.dot(N) * N - Lm;
+    Vector Lm = (lights[i]->position - hit).normalized();
+    Vector Rm = 2* Lm.dot(N) * N - Lm;
 		
-		/* ambient */
-		Il += material->ka * lights[i]->color;
+    /* ambient */
+    if(!level){
+      Il += material->ka * lights[i]->color;
 		
-		if(renderShadows){
-			Object * hobj = NULL;
-			trace(Ray(hit, -Lm), &hobj);
-			if(hobj != obj) continue; // light-ray hits object: shadow
-		}
+      if(renderShadows){
+	Object * hobj = NULL;
+	trace(Ray(hit, -Lm), &hobj);
+	if(hobj != obj) continue; // light-ray hits object: shadow
+      }
 		
-		/* diffuse */
-		double diffuse = material->kd * max(0.0,Lm.dot(N));
-		Il +=  diffuse * lights[i]->color;
-		
-		/* specular */
-	    specular += material->ks * pow(max(0.0,Rm.dot(V)),material->n) * lights[i]->color;
+      /* diffuse */
+      double diffuse = material->kd * max(0.0,Lm.dot(N));
+      Il +=  diffuse * lights[i]->color;
     }
+		
+    /* specular */
+    specular += material->ks * pow(max(0.0,Rm.dot(V)),material->n) * lights[i]->color;
+  }
 	
-	Color reflect = Color(0.0, 0.0, 0.0);
-	if(level--){
-		Vector r = 2*ray.D.dot(min_hit.N)*min_hit.N - ray.D;
-		Object * robj;
-		Hit rh = trace(Ray(hit, r), &robj);
-		if(robj && robj != obj){
-			reflect = phongTrace(Ray(hit, r), level);
-		}
-	}
+  Color reflect = Color(0.0, 0.0, 0.0);
+  if(level++ < reflectRecursion){
+    Vector r = 2*ray.D.dot(min_hit.N)*min_hit.N - ray.D;
+    Object * robj;
+    Hit rh = trace(Ray(hit, r), &robj);
+    if(robj && robj != obj){
+      reflect += phongTrace(Ray(hit, r), level);
+    }
+  }
 	
-    return color * Il + specular + reflect;
+  return color * Il + specular + reflect;
 }
 
 void Scene::zRender(Image &img){
@@ -180,7 +182,7 @@ void Scene::phongRender(Image &img)
 				for(int aay = 0; aay*aay < superSamples; aay++){
 					Point pixel(xx + sqrtSamples*aax, yy - sqrtSamples*aay, 0);
 					Ray ray(eye, (pixel-eye).normalized());
-					col += phongTrace(ray, 2) / (double)superSamples;
+					col += phongTrace(ray, 0) / (double)superSamples;
 				}
 			}
 			(col).clamp();
