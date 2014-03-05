@@ -29,10 +29,11 @@ private:
     std::vector<Object*> objects;
     std::vector<Light*> lights;
 	
+	Color phongReflect(const Ray &ray, int level, Object * src);
     void phongRender(Image &img);
     void normalRender(Image &img);
     void zRender(Image &img);
-    Color phongTrace(const Ray &ray);
+    Color phongTrace(const Ray &ray, int level);
 	Hit trace(const Ray& ray, Object ** obj);
 public:
     void render(Image &img);

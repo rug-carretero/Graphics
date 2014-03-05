@@ -16,12 +16,7 @@ Eye: [200,200,1000]
 
 Shadows: true
 SuperSampling:
-  factor: 9
-  
-Camera:
-  eye: [200, 200, 1000]
-  center: []
-  up: []
+  factor: 1
 
 Lights:
 - position: [-200,600,1500]

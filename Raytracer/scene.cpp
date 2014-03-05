@@ -44,7 +44,21 @@ Hit Scene::trace(const Ray& ray, Object ** object){
     return min_hit;
 }
 
-Color Scene::phongTrace(const Ray &ray)
+Color Scene::phongReflect(const Ray &ray, int level, Object * src){
+	if(!level) return Color(0.0, 0.0, 0.0);
+	
+	Object * obj;
+	Hit h = trace(ray, &obj);
+	
+	if(!obj || obj == src) return Color(0.0, 0.0, 0.0);
+	
+	Vector r = ray.D - 2*ray.D.dot(h.N)*h.N;
+	Ray reflect(ray.at(h.t), r);
+	
+	return obj->material->color * obj->material->ks + phongReflect(reflect, --level, obj);
+}
+
+Color Scene::phongTrace(const Ray &ray, int level)
 {
     Object * obj;
     
@@ -105,8 +119,18 @@ Color Scene::phongTrace(const Ray &ray)
 		/* specular */
 	    specular += material->ks * pow(max(0.0,Rm.dot(V)),material->n) * lights[i]->color;
     }
-
-    return color * Il + specular;
+	
+	Color reflect = Color(0.0, 0.0, 0.0);
+	if(level--){
+		Vector r = 2*ray.D.dot(min_hit.N)*min_hit.N - ray.D;
+		Object * robj;
+		Hit rh = trace(Ray(hit, r), &robj);
+		if(robj && robj != obj){
+			reflect = phongTrace(Ray(hit, r), level);
+		}
+	}
+	
+    return color * Il + specular + reflect;
 }
 
 void Scene::zRender(Image &img){
@@ -156,7 +180,7 @@ void Scene::phongRender(Image &img)
 				for(int aay = 0; aay*aay < superSamples; aay++){
 					Point pixel(xx + sqrtSamples*aax, yy - sqrtSamples*aay, 0);
 					Ray ray(eye, (pixel-eye).normalized());
-					col += phongTrace(ray) / (double)superSamples;
+					col += phongTrace(ray, 2) / (double)superSamples;
 				}
 			}
 			(col).clamp();
