@@ -14,8 +14,17 @@
 
 Eye: [200,200,1000]  
 
+Camera:
+    eye: [200,200,1000]
+    center: [200,200,0]
+    up: [0,1,0]
+    viewSize: [400,400]
+
 Shadows: true
-MaxRecursionDepth: 2
+MaxRecursionDepth: 0
+
+SuperSampling:
+  factor: 16
 
 Lights:
 - position: [-200,600,1500]

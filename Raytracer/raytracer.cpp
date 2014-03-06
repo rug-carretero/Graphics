@@ -233,6 +233,7 @@ void Raytracer::renderToFile(const std::string& outputFilename)
 		case Scene::RenderNormal: cout << "normal"; break;
 	}
 	cout << endl;
+	cout << "Reflection recursion: " << scene->reflectRecursion << endl;
     scene->render(img);
     cout << "Writing image to " << outputFilename << "..." << endl;
     img.write_png(outputFilename.c_str());

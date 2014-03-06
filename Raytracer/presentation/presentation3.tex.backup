@@ -1,0 +1,53 @@
+\documentclass{beamer}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usetheme{default}
+\author{Bart Offereins\\Marco Gunnink}
+\title{Raytracing exercise 3, 4}
+
+\begin{document}
+
+\titlepage
+
+\begin{frame}{Shadows}
+
+\begin{itemize}
+	\item Trace from hit point to light-source
+	\item If a hit is found $\rightarrow$ shadow
+\end{itemize}
+
+\begin{figure}[ht]
+	\includegraphics[width=5cm]{shadow-fail.png}
+	\includegraphics[width=5cm]{shadow-win.png}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{Reflections}
+
+\begin{figure}[ht]
+	\includegraphics[width=5cm]{reflect-fail-1.png}
+\end{figure}
+
+
+\end{frame}
+
+\begin{frame}{Phong illumination}
+
+
+
+\end{frame}
+
+\begin{frame}{Zbuffer/Normal rendering}
+
+
+
+   \begin{figure}[ht]
+       % \includegraphics[width=5cm]{scene01-zbuffer.png} %phong wrong
+       % \includegraphics[width=5cm]{scene01-normal.png} %phong right
+    \end{figure}
+
+\end{frame}
+
+
+\end{document}
