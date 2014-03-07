@@ -30,6 +30,8 @@
 #endif
 
 #define M_PI 3.141592653
+#define GOLDEN_RATIO (.5 * (1 + sqrt(5.0)))
+#define GOLDEN_ANGLE (2 * M_PI / (GOLDEN_RATIO * GOLDEN_RATIO))
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -42,9 +44,9 @@ double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
 	upX = 0.0, upY = 1.0, upZ = 0.0,
 	
 	phi = 0.0, theta = 0.0, dist = 5.0,
-	fovy = 60.0;
+	fovy = 60.0, vogelRadius = 10.0;
 	
-int mouseX = 0, mouseY = 0, width, height;
+int mouseX = 0, mouseY = 0, width, height, apertureSamples = 8;
 
 /*
  * Rotation-helpers
@@ -164,7 +166,7 @@ void drawCube(void){
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, cubeVertices);
 	
-	GLenum mode = GL_LINES;
+	GLenum mode = GL_TRIANGLES;
 	
 	// draw a cube
     glColor3f(0.0f,0.0f,1.0f);
@@ -226,8 +228,8 @@ void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfl
 }
 
 void drawSpheres(void){
-    GLfloat lightPos[] = {-200.0, 600.0, 1500.0, 1.0};
-    GLfloat lightAmbient[] = {1.0, 1.0, 1.0, 1.0};
+    const static GLfloat lightPos[] = {-200.0, 600.0, 1500.0, 1.0};
+    const static GLfloat lightAmbient[] = {1.0, 1.0, 1.0, 1.0};
     
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
     glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
@@ -280,18 +282,30 @@ void displaySphere(void)
 	rePerspectifySphere();
 	
     /* Clear all pixels */
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
     glLoadIdentity();
     
-    // gluLookAt(200.0, 200.0, 1000.0, 200.0, 200.0, 200.0, 0.0, 1.0, 0.0);
-	gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
-    
-    glTranslated(eyeX, eyeY, eyeZ);
-    glRotated(theta * 180.0/M_PI, upX, upY, upZ);
-    glRotated(phi * 180.0/M_PI, 1.0, 0.0, 0.0);
-    glTranslated(-eyeX, -eyeY, -eyeZ);
+    double c = vogelRadius / sqrt(apertureSamples);
+        
+	for(int i = 0;i < apertureSamples; i++){
+		
+		double vogelTheta = i * GOLDEN_ANGLE;
+		double r = c * sqrt(i); 
+     
+		// gluLookAt(200.0, 200.0, 1000.0, 200.0, 200.0, 200.0, 0.0, 1.0, 0.0);
+		gluLookAt(eyeX+sin(vogelTheta)*r, eyeY+cos(vogelTheta)*r, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
+		
+		glTranslated(eyeX, eyeY, eyeZ);
+		glRotated(theta * 180.0/M_PI, upX, upY, upZ);
+		glRotated(phi * 180.0/M_PI, 1.0, 0.0, 0.0);
+		glTranslated(-eyeX, -eyeY, -eyeZ);
 	
-	drawSpheres();
+		drawSpheres();
+		glAccum(i ? GL_ACCUM : GL_LOAD, 1.0 / apertureSamples);
+		glFlush();
+	}
+
+	glAccum(GL_RETURN, 1);
 
     glutSwapBuffers();
 }
@@ -334,7 +348,7 @@ int main(int argc, char** argv)
 #endif
 
     glutInit(&argc,argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_ACCUM);
     glutInitWindowSize(800,600);
     glutInitWindowPosition(220,100);
     glutCreateWindow("Computer Graphics - OpenGL framework");
@@ -363,7 +377,7 @@ int main(int argc, char** argv)
 	glutMotionFunc(motion);
 	glutMouseFunc(mouse);
 	
-	initCube();
+	initSphere();
 
     glutMainLoop();
 
