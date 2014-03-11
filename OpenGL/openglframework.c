@@ -1,6 +1,8 @@
 /*
+*
 * An OpenGL template/framework file for the Computer Graphics course
 * at the University of Groningen.
+*
 */
 
 // If windows is used, windows.h should be included (before gl.h and glu.h)
