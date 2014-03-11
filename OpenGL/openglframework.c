@@ -291,6 +291,8 @@ void displaySphere(void)
 		
 		double vogelTheta = i * GOLDEN_ANGLE;
 		double r = c * sqrt(i); 
+		/*ugly hack, sould not be necessary, but it works*/
+		glLoadIdentity();
      
 		// gluLookAt(200.0, 200.0, 1000.0, 200.0, 200.0, 200.0, 0.0, 1.0, 0.0);
 		gluLookAt(eyeX+sin(vogelTheta)*r, eyeY+cos(vogelTheta)*r, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
