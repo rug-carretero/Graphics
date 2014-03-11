@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "glm.h"
 #include "glslshaders.h"
  
 double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
@@ -193,13 +194,21 @@ void displayCube(void)
     /* Clear all pixels */
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-	
-    gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
+
+    //gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
+    gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+
     
     glRotated(theta * 180.0/M_PI, upX, upY, upZ);
     glRotated(phi * 180.0/M_PI, 1.0, 0.0, 0.0);
 	
-	drawCube();
+    //drawCube();
+
+	GLMmodel * obj = glmReadOBJ("obj/devilduk.obj");
+	glmScale(obj, 2);
+	glmFacetNormals(obj);
+	glmVertexNormals(obj, 90);
+	glmDraw(obj, GLM_SMOOTH | GLM_COLOR);
 
     glutSwapBuffers();
 }
@@ -296,7 +305,7 @@ void displaySphere(void)
 		/*ugly hack, sould not be necessary, but it works*/
 		glLoadIdentity();
      
-		// gluLookAt(200.0, 200.0, 1000.0, 200.0, 200.0, 200.0, 0.0, 1.0, 0.0);
+		//gluLookAt(200.0, 200.0, 1000.0, 200.0, 200.0, 200.0, 0.0, 1.0, 0.0);
 		gluLookAt(eyeX+sin(vogelTheta)*r, eyeY+cos(vogelTheta)*r, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
 		
 		glTranslated(eyeX, eyeY, eyeZ);
@@ -381,7 +390,7 @@ int main(int argc, char** argv)
 	glutMotionFunc(motion);
 	glutMouseFunc(mouse);
 	
-	initSphere();
+	initCube();
 
     glutMainLoop();
 

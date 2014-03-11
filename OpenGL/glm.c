@@ -22,14 +22,6 @@
 
 #define T(x) (model->triangles[(x)])
 
-char * mystrdup(const char *s){
-	char * p = malloc(strlen(s) + 1);
-	if(p) strcpy(p, s);
-	return p;
-}
-
-#define strdup(x) mystrdup(x)
-
 
 /* _GLMnode: general purpose node
  */
