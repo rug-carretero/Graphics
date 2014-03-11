@@ -1,2 +1,7 @@
-openglframework.o: openglframework.c glslshaders.h
-glslshaders.o: glslshaders.c glslshaders.h
+openglframework.o: openglframework.c glew.h includes/GL/freeglut.h \
+ includes/GL/freeglut_std.h includes/GL/freeglut_ext.h glslshaders.h
+glslshaders.o: glslshaders.c glslshaders.h glew.h includes/GL/freeglut.h \
+ includes/GL/freeglut_std.h includes/GL/freeglut_ext.h
+glm.o: glm.c glm.h includes/GL/freeglut.h includes/GL/freeglut_std.h \
+ includes/GL/freeglut_ext.h
+glew.o: glew.c glew.h wglew.h

@@ -1,5 +1,5 @@
 # GNU (everywhere)
-CC = gcc -g -Wall -pedantic -std=c99
+CC = gcc -g -Wall -Wno-format -pedantic -std=c99
 
 # GNU (faster)
 #CPP = gcc -O5 -Wall -fomit-frame-pointer -ffast-math 
@@ -7,7 +7,7 @@ CC = gcc -g -Wall -pedantic -std=c99
 UNAME=$(shell uname)
 
 EXECUTABLE = openglframework
-OBJS = openglframework.o glslshaders.o
+OBJS = openglframework.o glslshaders.o glm.o
 
 ifeq ($(UNAME),Darwin)
 	LIBS = -lm -framework OpenGL -framework GLUT
