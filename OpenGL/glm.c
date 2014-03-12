@@ -1650,7 +1650,7 @@ glmDraw(GLMmodel* model, GLuint mode)
   glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
 	 
   //Upload vertex data to the video device
-  glBufferData(GL_ARRAY_BUFFER, model->numvertices*sizeof(*model->vertices), model->vertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, model->numvertices*sizeof(*model->vertices)*3, model->vertices, GL_STATIC_DRAW);
 	 
   //Make the new VBO active. Repeat here incase changed since initialisation
   glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
@@ -1684,7 +1684,7 @@ glmDraw(GLMmodel* model, GLuint mode)
     glEnableClientState(GL_VERTEX_ARRAY);
 	 
     //Actually draw the triangle, giving the number of vertices provided
-    glDrawArrays(GL_POINTS, 0, model->numvertices);
+    glDrawArrays(GL_TRIANGLES, 0, model->numvertices);
 	 
     //Force display to be drawn now
     glFlush();
