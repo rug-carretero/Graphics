@@ -5,8 +5,6 @@
 *
 */
 
-#define GL_GLEXT_PROTOTYPES
-
 
 // If windows is used, windows.h should be included (before gl.h and glu.h)
 #if defined(_WIN32)
@@ -41,11 +39,12 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+
 #include <math.h>
 
 #include "glm.h"
 #include "glslshaders.h"
-#include <GL/glext.h>
+
 
  
 double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
@@ -61,9 +60,8 @@ GLMmodel * obj;
 
 //Initialise VBO - do only once, at start of program
 //Create a variable to hold the VBO identifier
-GLuint triangleVBO;
 
-void VBOcruft();
+/*void VBOcruft();*/
 /*
  * Rotation-helpers
  */
@@ -219,7 +217,7 @@ void displayCube(void)
 	glmDraw(obj, GLM_SMOOTH | GLM_COLOR);
 	
 	
-	VBOcruft();
+	//VBOcruft();
 
     glutSwapBuffers();
 }
@@ -341,7 +339,7 @@ void reshapeSphere(int w, int h)
 }
 
 
-void VBOcruft(){
+/*void VBOcruft(){
 	//Vertices of a triangle (counter-clockwise winding)
 	float data[] = {1.0, 0.0, 1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 1.0};
 	//try float data[] = {0.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, -1.0, 0.0}; if the above doesn't work.
@@ -371,7 +369,7 @@ void VBOcruft(){
 	//Force display to be drawn now
 	glFlush();
 }
-
+*/
 
 /*
  * Initializations
