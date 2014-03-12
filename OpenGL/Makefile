@@ -1,5 +1,5 @@
 # GNU (everywhere)
-CC = gcc -g -Wall -Wno-format -pedantic -std=c99
+CC = gcc -g -Wall -Wno-format -pedantic -std=gnu99
 
 # GNU (faster)
 #CPP = gcc -O5 -Wall -fomit-frame-pointer -ffast-math 

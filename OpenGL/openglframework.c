@@ -5,6 +5,9 @@
 *
 */
 
+#define GL_GLEXT_PROTOTYPES
+
+
 // If windows is used, windows.h should be included (before gl.h and glu.h)
 #if defined(_WIN32)
 #include <windows.h>
@@ -35,12 +38,15 @@
 #define GOLDEN_RATIO (.5 * (1 + sqrt(5.0)))
 #define GOLDEN_ANGLE (2 * M_PI / (GOLDEN_RATIO * GOLDEN_RATIO))
 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
 #include "glm.h"
 #include "glslshaders.h"
+#include <GL/glext.h>
+
  
 double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
 	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
@@ -51,6 +57,13 @@ double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
 	
 int mouseX = 0, mouseY = 0, width, height, apertureSamples = 8;
 
+GLMmodel * obj;
+
+//Initialise VBO - do only once, at start of program
+//Create a variable to hold the VBO identifier
+GLuint triangleVBO;
+
+void VBOcruft();
 /*
  * Rotation-helpers
  */
@@ -195,20 +208,18 @@ void displayCube(void)
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-    //gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
-    gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
+    //gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
-    
     glRotated(theta * 180.0/M_PI, upX, upY, upZ);
     glRotated(phi * 180.0/M_PI, 1.0, 0.0, 0.0);
 	
     //drawCube();
 
-	GLMmodel * obj = glmReadOBJ("obj/devilduk.obj");
-	glmScale(obj, 2);
-	glmFacetNormals(obj);
-	glmVertexNormals(obj, 90);
 	glmDraw(obj, GLM_SMOOTH | GLM_COLOR);
+	
+	
+	VBOcruft();
 
     glutSwapBuffers();
 }
@@ -287,10 +298,7 @@ void rePerspectifySphere(){
 
 void displaySphere(void)
 {
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	
-	rePerspectifySphere();
+		rePerspectifySphere();
 	
     /* Clear all pixels */
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
@@ -332,6 +340,39 @@ void reshapeSphere(int w, int h)
     rePerspectifySphere();
 }
 
+
+void VBOcruft(){
+	//Vertices of a triangle (counter-clockwise winding)
+	float data[] = {1.0, 0.0, 1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 1.0};
+	//try float data[] = {0.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, -1.0, 0.0}; if the above doesn't work.
+	 
+	//Create a new VBO and use the variable id to store the VBO id
+	glGenBuffers(1, &triangleVBO);
+	 
+	//Make the new VBO active
+	glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
+	 
+	//Upload vertex data to the video device
+	glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+	 
+	//Make the new VBO active. Repeat here incase changed since initialisation
+	glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
+	 
+	//Draw Triangle from VBO - do each time window, view point or data changes
+	//Establish its 3 coordinates per vertex with zero stride in this array; necessary here
+	glVertexPointer(3, GL_FLOAT, 0, NULL);
+	 
+	//Establish array contains vertices (not normals, colours, texture coords etc)
+	glEnableClientState(GL_VERTEX_ARRAY);
+	 
+	//Actually draw the triangle, giving the number of vertices provided
+	glDrawArrays(GL_TRIANGLES, 0, sizeof(data) / sizeof(float) / 3);
+	 
+	//Force display to be drawn now
+	glFlush();
+}
+
+
 /*
  * Initializations
  */
@@ -339,6 +380,11 @@ void initCube(){
 	eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
 	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
 	upX = 0.0, upY = 1.0, upZ = 0.0, fovy = 60.0;
+	
+	obj = glmReadOBJ("obj/devilduk.obj");
+	glmScale(obj, 2);
+	glmFacetNormals(obj);
+	glmVertexNormals(obj, 90);
 	
 	glutDisplayFunc(displayCube);
     glutReshapeFunc(reshapeCube);
@@ -353,6 +399,7 @@ void initSphere(){
 	glutDisplayFunc(displaySphere);
     glutReshapeFunc(reshapeSphere);
 }
+
 
 int main(int argc, char** argv)
 {
@@ -381,7 +428,8 @@ int main(int argc, char** argv)
     glClearColor(0.0,0.0,0.0,0.0);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
-	
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
 	//initGLSLProgram("normalvertex.glsl","normalfragment.glsl");
 
     /* Register GLUT callback functions */
