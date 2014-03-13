@@ -436,7 +436,7 @@ int main(int argc, char** argv)
 	glutMotionFunc(motion);
 	glutMouseFunc(mouse);
 	
-	initCube();
+	initSphere();
 
     glutMainLoop();
 
