@@ -216,9 +216,6 @@ void displayCube(void)
     //drawCube();
 
 	glmDraw(obj, GLM_FLAT | GLM_COLOR);
-	
-	
-	//VBOcruft();
 
     glutSwapBuffers();
 }
@@ -228,7 +225,7 @@ void reshapeCube(int w, int h)
     glViewport(0,0, (GLsizei) w, (GLsizei) h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(fovy,(GLdouble)w/(GLdouble)h,1.5,20.0);
+    gluPerspective(fovy,(GLdouble)w/(GLdouble)h,1.5,200.0);
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -338,39 +335,6 @@ void reshapeSphere(int w, int h)
     fovy = 2.0*atan2(height/2.0,1000.0)*180.0/M_PI;
     rePerspectifySphere();
 }
-
-
-/*void VBOcruft(){
-	//Vertices of a triangle (counter-clockwise winding)
-	float data[] = {1.0, 0.0, 1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 1.0};
-	//try float data[] = {0.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, -1.0, 0.0}; if the above doesn't work.
-	 
-	//Create a new VBO and use the variable id to store the VBO id
-	glGenBuffers(1, &triangleVBO);
-	 
-	//Make the new VBO active
-	glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
-	 
-	//Upload vertex data to the video device
-	glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
-	 
-	//Make the new VBO active. Repeat here incase changed since initialisation
-	glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
-	 
-	//Draw Triangle from VBO - do each time window, view point or data changes
-	//Establish its 3 coordinates per vertex with zero stride in this array; necessary here
-	glVertexPointer(3, GL_FLOAT, 0, NULL);
-	 
-	//Establish array contains vertices (not normals, colours, texture coords etc)
-	glEnableClientState(GL_VERTEX_ARRAY);
-	 
-	//Actually draw the triangle, giving the number of vertices provided
-	glDrawArrays(GL_TRIANGLES, 0, sizeof(data) / sizeof(float) / 3);
-	 
-	//Force display to be drawn now
-	glFlush();
-}
-*/
 
 /*
  * Initializations

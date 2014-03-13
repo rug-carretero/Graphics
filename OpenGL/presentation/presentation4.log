@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.8.26)  13 MAR 2014 14:22
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.8.26)  13 MAR 2014 14:57
 entering extended mode
  %&-line parsing enabled.
 **presentation4.tex
@@ -771,17 +771,28 @@ LaTeX Font Warning: Font shape `OT1/cmss/m/n' in size <4> not available
 opy)> <./vogel-win-dof.png (PNG copy)>]
 <duck-dot.png, id=67, 961.5925pt x 1062.97125pt>
 File: duck-dot.png Graphic file (type png)
- <use duck-dot.png> [3
+ <use duck-dot.png>
+<duck-dotted-coloured.png, id=68, 961.5925pt x 1062.97125pt>
+File: duck-dotted-coloured.png Graphic file (type png)
 
- <./duck-dot.png (PNG copy)>] <duck-flat.png, id=92, 961.5925pt x 1062.97125pt>
+<use duck-dotted-coloured.png> [3
+
+ <./duck-dot.png (PNG copy)> <./duck-dotted-coloured.png (PNG copy)>] <duck-fla
+t.png, id=94, 961.5925pt x 1062.97125pt>
 File: duck-flat.png Graphic file (type png)
 
-<use duck-flat.png> <duck-smooth.png, id=93, 961.5925pt x 1062.97125pt>
+<use duck-flat.png> <duck-smooth.png, id=95, 961.5925pt x 1062.97125pt>
 File: duck-smooth.png Graphic file (type png)
 
 <use duck-smooth.png> [4
 
- <./duck-flat.png (PNG copy)> <./duck-smooth.png (PNG copy)>]
+ <./duck-flat.png (PNG copy)> <./duck-smooth.png (PNG copy)>] <duck-coloured.pn
+g, id=120, 961.5925pt x 1062.97125pt>
+File: duck-coloured.png Graphic file (type png)
+
+<use duck-coloured.png> [5
+
+ <./duck-coloured.png (PNG copy)>]
 \tf@nav=\write5
 \openout5 = `presentation4.nav'.
 
@@ -791,25 +802,26 @@ File: duck-smooth.png Graphic file (type png)
 \tf@snm=\write7
 \openout7 = `presentation4.snm'.
 
- (./presentation4.aux)
+
+(./presentation4.aux)
 
 LaTeX Font Warning: Size substitutions with differences
 (Font)              up to 1.0pt have occurred.
 
  ) 
 Here is how much of TeX's memory you used:
- 12437 strings out of 494768
- 218427 string characters out of 1177645
+ 12451 strings out of 494768
+ 218703 string characters out of 1177645
  298126 words of memory out of 3000000
- 15304 multiletter control sequences out of 15000+50000
+ 15314 multiletter control sequences out of 15000+50000
  5452 words of font info for 20 fonts, out of 3000000 for 9000
  252 hyphenation exceptions out of 8191
  45i,14n,51p,341b,531s stack positions out of 5000i,500n,10000p,200000b,50000s
 </usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmss10.pfb></usr/sha
 re/texmf-texlive/fonts/type1/public/amsfonts/cm/cmss12.pfb>
-Output written on presentation4.pdf (4 pages, 307725 bytes).
+Output written on presentation4.pdf (5 pages, 370302 bytes).
 PDF statistics:
- 129 PDF objects out of 1000 (max. 8388607)
- 9 named destinations out of 1000 (max. 500000)
- 58 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 156 PDF objects out of 1000 (max. 8388607)
+ 11 named destinations out of 1000 (max. 500000)
+ 68 words of extra memory for PDF output out of 10000 (max. 10000000)
 
