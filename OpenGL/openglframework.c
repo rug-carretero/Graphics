@@ -52,7 +52,8 @@ double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
 	upX = 0.0, upY = 1.0, upZ = 0.0,
 	
 	phi = 0.0, theta = 0.0, dist = 5.0,
-	fovy = 60.0, vogelRadius = 10.0;
+	fovy = 60.0, vogelRadius = 10.0,
+	movementscale = 0.1;
 	
 int mouseX = 0, mouseY = 0, width, height, apertureSamples = 8;
 
@@ -90,11 +91,11 @@ void motion(int x, int y){
 		deltaY = y - mouseY;
 	
 	if(glutGetModifiers() == GLUT_ACTIVE_CTRL){
-		centerX -= deltaX;
-		eyeX -= deltaX;
+		centerX -= deltaX * movementscale;
+		eyeX -= deltaX * movementscale;
 		
-		centerY += deltaY;
-		eyeY += deltaY;
+		centerY += deltaY * movementscale;
+		eyeY += deltaY * movementscale;
 	}else if(glutGetModifiers() == GLUT_ACTIVE_SHIFT){
 		fovy += deltaY;
 	}else{
@@ -119,18 +120,18 @@ void keyboard(unsigned char key, int x, int y)
         break;
 			
 		case 'a':
-			eyeX -= 10.0;
-			centerX -= 10.0;
+			eyeX -= 10.0 * movementscale;
+			centerX -= 10.0 * movementscale;
 		break;
 		case 'd':
-			eyeX += 10.0;
-			centerX += 10.0;
+			eyeX += 10.0 * movementscale;
+			centerX += 10.0 * movementscale;
 		break;
 		case 'w':
-			eyeZ -= 10.0;
+			eyeZ -= 10.0 * movementscale;
 		break;
 		case 's':
-			eyeZ += 10.0;
+			eyeZ += 10.0 * movementscale;
 		break;
     }
 	glutPostRedisplay();
@@ -379,6 +380,8 @@ void initCube(){
 	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
 	upX = 0.0, upY = 1.0, upZ = 0.0, fovy = 60.0;
 	
+	movementscale = 0.01;
+	
 	obj = glmReadOBJ("obj/devilduk.obj");
 	glmScale(obj, 2);
 	glmFacetNormals(obj);
@@ -394,6 +397,8 @@ void initSphere(){
 	centerX = 200.0, centerY = 200.0, centerZ = 200.0,
 	upX = 0.0, upY = 1.0, upZ = 0.0, 
 	fovy = 2.0*atan2(height/2.0,1000.0)*180.0/M_PI;
+	
+	movementscale = 1.0;
 	
 	glutDisplayFunc(displaySphere);
     glutReshapeFunc(reshapeSphere);

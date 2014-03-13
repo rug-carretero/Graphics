@@ -1377,7 +1377,8 @@ void glmInitVBO(GLMmodel * model){
 	printf("vertices: %u\nnormals: %u\ntriangle-vbos: %u\nfacetnorms: %u\n", model->numvertices, model->numnormals, model->numtriangles * 3 * 3, model->numfacetnorms);
   size_t i;
   model->VBOarray = malloc(model->numtriangles * 3 * 3 * sizeof *model->VBOarray);
-  model->VBOnormals = malloc((model->numtriangles + 1) * 3 * 3 * sizeof *model->VBOnormals);
+  model->VBOfacetnorms = malloc((model->numtriangles + 1) * 3 * 3 * sizeof *model->VBOfacetnorms);
+  model->VBOvertexnorms = malloc((model->numtriangles + 1) * 3 * 3 * sizeof *model->VBOvertexnorms);
   
   assert(model->VBOarray);
   
@@ -1400,17 +1401,29 @@ void glmInitVBO(GLMmodel * model){
 	  model->VBOarray[9 * i + 6 + 1] = model->vertices[3 * triangle->vindices[2] + 1];
 	  model->VBOarray[9 * i + 6 + 2] = model->vertices[3 * triangle->vindices[2] + 2];
 		/*********normal copying*********/
-	  model->VBOnormals[9 * i]         = model->facetnorms[3 * triangle->findex];
-	  model->VBOnormals[9 * i + 1]     = model->facetnorms[3 * triangle->findex + 1];
-	  model->VBOnormals[9 * i + 2]     = model->facetnorms[3 * triangle->findex + 2];
+	  model->VBOfacetnorms[9 * i]         = model->facetnorms[3 * triangle->findex];
+	  model->VBOfacetnorms[9 * i + 1]     = model->facetnorms[3 * triangle->findex + 1];
+	  model->VBOfacetnorms[9 * i + 2]     = model->facetnorms[3 * triangle->findex + 2];
 
-	  model->VBOnormals[9 * i + 3]     = model->facetnorms[3 * triangle->findex];
-	  model->VBOnormals[9 * i + 3 + 1] = model->facetnorms[3 * triangle->findex + 1];
-	  model->VBOnormals[9 * i + 3 + 2] = model->facetnorms[3 * triangle->findex + 2];
+	  model->VBOfacetnorms[9 * i + 3]     = model->facetnorms[3 * triangle->findex];
+	  model->VBOfacetnorms[9 * i + 3 + 1] = model->facetnorms[3 * triangle->findex + 1];
+	  model->VBOfacetnorms[9 * i + 3 + 2] = model->facetnorms[3 * triangle->findex + 2];
 
-	  model->VBOnormals[9 * i + 6]     = model->facetnorms[3 * triangle->findex];
-	  model->VBOnormals[9 * i + 6 + 1] = model->facetnorms[3 * triangle->findex + 1];
-	  model->VBOnormals[9 * i + 6 + 2] = model->facetnorms[3 * triangle->findex + 2];
+	  model->VBOfacetnorms[9 * i + 6]     = model->facetnorms[3 * triangle->findex];
+	  model->VBOfacetnorms[9 * i + 6 + 1] = model->facetnorms[3 * triangle->findex + 1];
+	  model->VBOfacetnorms[9 * i + 6 + 2] = model->facetnorms[3 * triangle->findex + 2];
+		/*********normal copying*********/
+	  model->VBOvertexnorms[9 * i]         = model->normals[3 * triangle->nindices[0]];
+	  model->VBOvertexnorms[9 * i + 1]     = model->normals[3 * triangle->nindices[0] + 1];
+	  model->VBOvertexnorms[9 * i + 2]     = model->normals[3 * triangle->nindices[0] + 2];
+
+	  model->VBOvertexnorms[9 * i + 3]     = model->normals[3 * triangle->nindices[1]];
+	  model->VBOvertexnorms[9 * i + 3 + 1] = model->normals[3 * triangle->nindices[1] + 1];
+	  model->VBOvertexnorms[9 * i + 3 + 2] = model->normals[3 * triangle->nindices[1] + 2];
+
+	  model->VBOvertexnorms[9 * i + 6]     = model->normals[3 * triangle->nindices[2]];
+	  model->VBOvertexnorms[9 * i + 6 + 1] = model->normals[3 * triangle->nindices[2] + 1];
+	  model->VBOvertexnorms[9 * i + 6 + 2] = model->normals[3 * triangle->nindices[2] + 2];
 
   }
   
@@ -1426,7 +1439,8 @@ void glmInitVBO(GLMmodel * model){
   //Make the new VBO active. Repeat here incase changed since initialisation
   glGenBuffers(1, &normalVBO);
   glBindBuffer(GL_ARRAY_BUFFER, normalVBO);
-  glBufferData(GL_ARRAY_BUFFER, model->numtriangles * 3 * 3 * sizeof *model->VBOnormals, model->VBOnormals, GL_STATIC_DRAW); 
+  //glBufferData(GL_ARRAY_BUFFER, model->numtriangles * 3 * 3 * sizeof *model->VBOfacetnorms, model->VBOfacetnorms, GL_STATIC_DRAW); 
+  glBufferData(GL_ARRAY_BUFFER, model->numtriangles * 3 * 3 * sizeof *model->VBOvertexnorms, model->VBOvertexnorms, GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 

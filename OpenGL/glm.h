@@ -102,7 +102,8 @@ typedef struct _GLMmodel {
  
   GLfloat * VBOarray;		/* numtriangles * 3 * 3 */
 
-  GLfloat * VBOnormals;		/* numtriangles * 3 * 3 */
+  GLfloat * VBOfacetnorms;		/* numtriangles * 3 * 3 */
+  GLfloat * VBOvertexnorms;		/* numtriangles * 3 * 3 */
   
 
 } GLMmodel;
