@@ -386,7 +386,7 @@ void initCube(){
 	glmScale(obj, 2);
 	glmFacetNormals(obj);
 	glmVertexNormals(obj, 90);
-	glmInitVBO(obj);
+	glmInitVBO(obj, 0);
 	
 	glutDisplayFunc(displayCube);
     glutReshapeFunc(reshapeCube);

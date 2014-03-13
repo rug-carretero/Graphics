@@ -104,6 +104,7 @@ typedef struct _GLMmodel {
 
   GLfloat * VBOfacetnorms;		/* numtriangles * 3 * 3 */
   GLfloat * VBOvertexnorms;		/* numtriangles * 3 * 3 */
+  GLfloat * VBOnormals;
   
 
 } GLMmodel;
@@ -265,7 +266,7 @@ glmList(GLMmodel* model, GLuint mode);
 GLuint
 glmWeld(GLMmodel* model, GLfloat epsilon);
 
-void glmInitVBO(GLMmodel * model);
+void glmInitVBO(GLMmodel * model, GLuint mode);
 
 
 #ifdef __cplusplus

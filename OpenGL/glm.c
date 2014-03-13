@@ -1373,59 +1373,35 @@ glmReadOBJ(char* filename)
   return model;
 }
 
-void glmInitVBO(GLMmodel * model){
-	printf("vertices: %u\nnormals: %u\ntriangle-vbos: %u\nfacetnorms: %u\n", model->numvertices, model->numnormals, model->numtriangles * 3 * 3, model->numfacetnorms);
-  size_t i;
-  model->VBOarray = malloc(model->numtriangles * 3 * 3 * sizeof *model->VBOarray);
-  model->VBOfacetnorms = malloc((model->numtriangles + 1) * 3 * 3 * sizeof *model->VBOfacetnorms);
-  model->VBOvertexnorms = malloc((model->numtriangles + 1) * 3 * 3 * sizeof *model->VBOvertexnorms);
+void glmInitVBO(GLMmodel * model, GLuint mode){
+	size_t i, j, k = 0;
+	
+	model->VBOarray = malloc(model->numtriangles * 3 * 3 * sizeof *model->VBOarray);
+	model->VBOfacetnorms = malloc((model->numtriangles + 1) * 3 * 3 * sizeof *model->VBOfacetnorms);
+	model->VBOvertexnorms = malloc((model->numtriangles + 1) * 3 * 3 * sizeof *model->VBOvertexnorms);
+
+	assert(model->VBOarray);
+	assert(model->VBOfacetnorms);
+	assert(model->VBOvertexnorms);
+
+	GLMtriangle * triangle;
+
+	GLMgroup * group = model->groups;
   
-  assert(model->VBOarray);
-  
-  GLMtriangle * triangle;
-  
-  for(i = 0; i < model->numtriangles; i++){
-	  triangle = &(model->triangles[i]);
-	  
-	  assert(triangle->findex <= model->numfacetnorms);
-	  
-	  model->VBOarray[9 * i]         = model->vertices[3 * triangle->vindices[0]];
-	  model->VBOarray[9 * i + 1]     = model->vertices[3 * triangle->vindices[0] + 1];
-	  model->VBOarray[9 * i + 2]     = model->vertices[3 * triangle->vindices[0] + 2];
+	while(group){
+		for(i = 0; i < group->numtriangles; i++){
+			triangle = &T(group->triangles[i]);
 
-	  model->VBOarray[9 * i + 3]     = model->vertices[3 * triangle->vindices[1]];
-	  model->VBOarray[9 * i + 3 + 1] = model->vertices[3 * triangle->vindices[1] + 1];
-	  model->VBOarray[9 * i + 3 + 2] = model->vertices[3 * triangle->vindices[1] + 2];
-
-	  model->VBOarray[9 * i + 6]     = model->vertices[3 * triangle->vindices[2]];
-	  model->VBOarray[9 * i + 6 + 1] = model->vertices[3 * triangle->vindices[2] + 1];
-	  model->VBOarray[9 * i + 6 + 2] = model->vertices[3 * triangle->vindices[2] + 2];
-		/*********normal copying*********/
-	  model->VBOfacetnorms[9 * i]         = model->facetnorms[3 * triangle->findex];
-	  model->VBOfacetnorms[9 * i + 1]     = model->facetnorms[3 * triangle->findex + 1];
-	  model->VBOfacetnorms[9 * i + 2]     = model->facetnorms[3 * triangle->findex + 2];
-
-	  model->VBOfacetnorms[9 * i + 3]     = model->facetnorms[3 * triangle->findex];
-	  model->VBOfacetnorms[9 * i + 3 + 1] = model->facetnorms[3 * triangle->findex + 1];
-	  model->VBOfacetnorms[9 * i + 3 + 2] = model->facetnorms[3 * triangle->findex + 2];
-
-	  model->VBOfacetnorms[9 * i + 6]     = model->facetnorms[3 * triangle->findex];
-	  model->VBOfacetnorms[9 * i + 6 + 1] = model->facetnorms[3 * triangle->findex + 1];
-	  model->VBOfacetnorms[9 * i + 6 + 2] = model->facetnorms[3 * triangle->findex + 2];
-		/*********normal copying*********/
-	  model->VBOvertexnorms[9 * i]         = model->normals[3 * triangle->nindices[0]];
-	  model->VBOvertexnorms[9 * i + 1]     = model->normals[3 * triangle->nindices[0] + 1];
-	  model->VBOvertexnorms[9 * i + 2]     = model->normals[3 * triangle->nindices[0] + 2];
-
-	  model->VBOvertexnorms[9 * i + 3]     = model->normals[3 * triangle->nindices[1]];
-	  model->VBOvertexnorms[9 * i + 3 + 1] = model->normals[3 * triangle->nindices[1] + 1];
-	  model->VBOvertexnorms[9 * i + 3 + 2] = model->normals[3 * triangle->nindices[1] + 2];
-
-	  model->VBOvertexnorms[9 * i + 6]     = model->normals[3 * triangle->nindices[2]];
-	  model->VBOvertexnorms[9 * i + 6 + 1] = model->normals[3 * triangle->nindices[2] + 1];
-	  model->VBOvertexnorms[9 * i + 6 + 2] = model->normals[3 * triangle->nindices[2] + 2];
-
-  }
+			for(j = 0; j < 9; j++){
+				model->VBOarray[9 * (k) + j] = model->vertices[3 * triangle->vindices[j / 3] + j % 3];
+				model->VBOfacetnorms[9 * (k) + j]  = model->facetnorms[3 * triangle->findex + j % 3];
+				model->VBOvertexnorms[9 * (k) + j] = model->normals[3 * triangle->nindices[j / 3] + j % 3];
+			}
+			k++;
+		}
+		
+		group = group->next;
+	}
   
   //Create a new VBO and use the variable id to store the VBO id
   glGenBuffers(1, &triangleVBO);
@@ -1660,7 +1636,7 @@ glmDraw(GLMmodel* model, GLuint mode)
   static GLMgroup* group;
   static GLMtriangle* triangle;
   static GLMmaterial* material;
-
+	size_t k = 0;
 
 
   assert(model);
@@ -1727,40 +1703,38 @@ glmDraw(GLMmodel* model, GLuint mode)
   }
 
 
-  //group = model->groups;
+  group = model->groups;
   
-  //while(group){
+	while(group){
+		if (mode & GLM_COLOR) {
+			material = &model->materials[group->material];
+			glColor3fv(material->diffuse);
+		}
 
+		glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
+		//Draw Triangle from VBO - do each time window, view point or data changes
+		//Establish its 3 coordinates per vertex with zero stride in this array; necessary here
+		glVertexPointer(3, GL_FLOAT, 0, NULL);
 
-    if (mode & GLM_COLOR) {
-      //material = &model->materials[group->material];
-      //glColor3fv(material->diffuse);
-    }
+		glBindBuffer(GL_ARRAY_BUFFER, normalVBO);
+		glNormalPointer(GL_FLOAT, 0, NULL);
 
-	glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
-    //Draw Triangle from VBO - do each time window, view point or data changes
-    //Establish its 3 coordinates per vertex with zero stride in this array; necessary here
-    glVertexPointer(3, GL_FLOAT, 0, NULL);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, normalVBO);
-    glNormalPointer(GL_FLOAT, 0, NULL);
-	 
-    //Establish array contains vertices (not normals, colours, texture coords etc)
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY);
-	 
-    //Actually draw the triangle, giving the number of vertices provided
-    glDrawArrays(GL_TRIANGLES, 0, model->numtriangles * 3);
-    
-    glDisableClientState(GL_NORMAL_ARRAY);
-    glDisableClientState(GL_VERTEX_ARRAY);
-	 
-    //Force display to be drawn now
-    glFlush();
+		//Establish array contains vertices (not normals, colours, texture coords etc)
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_NORMAL_ARRAY);
 
-    //group = group->next;
+		//Actually draw the triangle, giving the number of vertices provided
+		glDrawArrays(GL_TRIANGLES, k, group->numtriangles * 3);
 
-    //}
+		glDisableClientState(GL_NORMAL_ARRAY);
+		glDisableClientState(GL_VERTEX_ARRAY);
+
+		//Force display to be drawn now
+		glFlush();
+
+		k += group->numtriangles * 3;
+		group = group->next;
+	}
   /*while (group) {
 
     glBegin(GL_TRIANGLES);
