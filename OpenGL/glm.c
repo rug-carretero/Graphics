@@ -1415,8 +1415,8 @@ void glmInitVBO(GLMmodel * model, GLuint mode){
   //Make the new VBO active. Repeat here incase changed since initialisation
   glGenBuffers(1, &normalVBO);
   glBindBuffer(GL_ARRAY_BUFFER, normalVBO);
-  //glBufferData(GL_ARRAY_BUFFER, model->numtriangles * 3 * 3 * sizeof *model->VBOfacetnorms, model->VBOfacetnorms, GL_STATIC_DRAW); 
-  glBufferData(GL_ARRAY_BUFFER, model->numtriangles * 3 * 3 * sizeof *model->VBOvertexnorms, model->VBOvertexnorms, GL_STATIC_DRAW);
+  if(mode & GLM_FLAT) glBufferData(GL_ARRAY_BUFFER, model->numtriangles * 3 * 3 * sizeof *model->VBOfacetnorms, model->VBOfacetnorms, GL_STATIC_DRAW); 
+  if(mode & GLM_SMOOTH) glBufferData(GL_ARRAY_BUFFER, model->numtriangles * 3 * 3 * sizeof *model->VBOvertexnorms, model->VBOvertexnorms, GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 

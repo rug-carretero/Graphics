@@ -350,7 +350,7 @@ void initCube(){
 	glmScale(obj, 2);
 	glmFacetNormals(obj);
 	glmVertexNormals(obj, 90);
-	glmInitVBO(obj, 0);
+	glmInitVBO(obj, GLM_SMOOTH);
 	
 	glutDisplayFunc(displayCube);
     glutReshapeFunc(reshapeCube);
