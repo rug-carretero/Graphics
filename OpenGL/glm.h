@@ -99,6 +99,11 @@ typedef struct _GLMmodel {
   GLMgroup*    groups;			/* linked list of groups */
 
   GLfloat position[3];			/* position of the model */
+ 
+  GLfloat * VBOarray;		/* numtriangles * 3 * 3 */
+
+  GLfloat * VBOnormals;		/* numtriangles * 3 * 3 */
+  
 
 } GLMmodel;
 
@@ -258,6 +263,8 @@ glmList(GLMmodel* model, GLuint mode);
  */
 GLuint
 glmWeld(GLMmodel* model, GLfloat epsilon);
+
+void glmInitVBO(GLMmodel * model);
 
 
 #ifdef __cplusplus

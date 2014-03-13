@@ -26,6 +26,7 @@
 
 
   GLuint triangleVBO;
+  GLuint normalVBO;
 
 /* _GLMnode: general purpose node
  */
@@ -1311,6 +1312,7 @@ glmReadOBJ(char* filename)
 {
   GLMmodel* model;
   FILE*     file;
+  size_t i;
 
   /* open the file */
   file = fopen(filename, "r");
@@ -1369,6 +1371,63 @@ glmReadOBJ(char* filename)
   fclose(file);
 
   return model;
+}
+
+void glmInitVBO(GLMmodel * model){
+	printf("vertices: %u\nnormals: %u\ntriangle-vbos: %u\nfacetnorms: %u\n", model->numvertices, model->numnormals, model->numtriangles * 3 * 3, model->numfacetnorms);
+  size_t i;
+  model->VBOarray = malloc(model->numtriangles * 3 * 3 * sizeof *model->VBOarray);
+  model->VBOnormals = malloc((model->numtriangles + 1) * 3 * 3 * sizeof *model->VBOnormals);
+  
+  assert(model->VBOarray);
+  
+  GLMtriangle * triangle;
+  
+  for(i = 0; i < model->numtriangles; i++){
+	  triangle = &(model->triangles[i]);
+	  
+	  assert(triangle->findex <= model->numfacetnorms);
+	  
+	  model->VBOarray[9 * i]         = model->vertices[3 * triangle->vindices[0]];
+	  model->VBOarray[9 * i + 1]     = model->vertices[3 * triangle->vindices[0] + 1];
+	  model->VBOarray[9 * i + 2]     = model->vertices[3 * triangle->vindices[0] + 2];
+
+	  model->VBOarray[9 * i + 3]     = model->vertices[3 * triangle->vindices[1]];
+	  model->VBOarray[9 * i + 3 + 1] = model->vertices[3 * triangle->vindices[1] + 1];
+	  model->VBOarray[9 * i + 3 + 2] = model->vertices[3 * triangle->vindices[1] + 2];
+
+	  model->VBOarray[9 * i + 6]     = model->vertices[3 * triangle->vindices[2]];
+	  model->VBOarray[9 * i + 6 + 1] = model->vertices[3 * triangle->vindices[2] + 1];
+	  model->VBOarray[9 * i + 6 + 2] = model->vertices[3 * triangle->vindices[2] + 2];
+		/*********normal copying*********/
+	  model->VBOnormals[9 * i]         = model->facetnorms[3 * triangle->findex];
+	  model->VBOnormals[9 * i + 1]     = model->facetnorms[3 * triangle->findex + 1];
+	  model->VBOnormals[9 * i + 2]     = model->facetnorms[3 * triangle->findex + 2];
+
+	  model->VBOnormals[9 * i + 3]     = model->facetnorms[3 * triangle->findex];
+	  model->VBOnormals[9 * i + 3 + 1] = model->facetnorms[3 * triangle->findex + 1];
+	  model->VBOnormals[9 * i + 3 + 2] = model->facetnorms[3 * triangle->findex + 2];
+
+	  model->VBOnormals[9 * i + 6]     = model->facetnorms[3 * triangle->findex];
+	  model->VBOnormals[9 * i + 6 + 1] = model->facetnorms[3 * triangle->findex + 1];
+	  model->VBOnormals[9 * i + 6 + 2] = model->facetnorms[3 * triangle->findex + 2];
+
+  }
+  
+  //Create a new VBO and use the variable id to store the VBO id
+  glGenBuffers(1, &triangleVBO);
+	 
+  //Make the new VBO active
+  glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
+  //Upload vertex data to the video device
+  glBufferData(GL_ARRAY_BUFFER, model->numtriangles * 3 * 3 * sizeof *model->VBOarray, model->VBOarray, GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  
+  //Make the new VBO active. Repeat here incase changed since initialisation
+  glGenBuffers(1, &normalVBO);
+  glBindBuffer(GL_ARRAY_BUFFER, normalVBO);
+  glBufferData(GL_ARRAY_BUFFER, model->numtriangles * 3 * 3 * sizeof *model->VBOnormals, model->VBOnormals, GL_STATIC_DRAW); 
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 /* glmWriteOBJ: Writes a model description in Wavefront .OBJ format to
@@ -1643,17 +1702,6 @@ glmDraw(GLMmodel* model, GLuint mode)
   //float data[] = {1.0, 0.0, 1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 1.0};
   //try float data[] = {0.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, -1.0, 0.0}; if the above doesn't work.
 	 
-  //Create a new VBO and use the variable id to store the VBO id
-  glGenBuffers(1, &triangleVBO);
-	 
-  //Make the new VBO active
-  glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
-	 
-  //Upload vertex data to the video device
-  glBufferData(GL_ARRAY_BUFFER, model->numvertices*sizeof(*model->vertices)*3, model->vertices, GL_STATIC_DRAW);
-	 
-  //Make the new VBO active. Repeat here incase changed since initialisation
-  glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
 
 
   if (mode & GLM_MATERIAL) {
@@ -1675,16 +1723,23 @@ glmDraw(GLMmodel* model, GLuint mode)
       //glColor3fv(material->diffuse);
     }
 
-	 
+	glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
     //Draw Triangle from VBO - do each time window, view point or data changes
     //Establish its 3 coordinates per vertex with zero stride in this array; necessary here
     glVertexPointer(3, GL_FLOAT, 0, NULL);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, normalVBO);
+    glNormalPointer(GL_FLOAT, 0, NULL);
 	 
     //Establish array contains vertices (not normals, colours, texture coords etc)
     glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
 	 
     //Actually draw the triangle, giving the number of vertices provided
-    glDrawArrays(GL_TRIANGLES, 0, model->numvertices);
+    glDrawArrays(GL_TRIANGLES, 0, model->numtriangles * 3);
+    
+    glDisableClientState(GL_NORMAL_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
 	 
     //Force display to be drawn now
     glFlush();
@@ -1705,18 +1760,21 @@ glmDraw(GLMmodel* model, GLuint mode)
     glNormal3fv(&model->normals[3 * triangle->nindices[0]]);
     if (mode & GLM_TEXTURE)
     glTexCoord2fv(&model->texcoords[2 * triangle->tindices[0]]);
+    
     glVertex3fv(&model->vertices[3 * triangle->vindices[0]]);
       
     if (mode & GLM_SMOOTH)
     glNormal3fv(&model->normals[3 * triangle->nindices[1]]);
     if (mode & GLM_TEXTURE)
     glTexCoord2fv(&model->texcoords[2 * triangle->tindices[1]]);
+    
     glVertex3fv(&model->vertices[3 * triangle->vindices[1]]);
       
     if (mode & GLM_SMOOTH)
     glNormal3fv(&model->normals[3 * triangle->nindices[2]]);
     if (mode & GLM_TEXTURE)
     glTexCoord2fv(&model->texcoords[2 * triangle->tindices[2]]);
+    
     glVertex3fv(&model->vertices[3 * triangle->vindices[2]]);
       
     }

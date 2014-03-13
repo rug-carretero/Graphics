@@ -214,7 +214,7 @@ void displayCube(void)
 	
     //drawCube();
 
-	glmDraw(obj, GLM_SMOOTH | GLM_COLOR);
+	glmDraw(obj, GLM_FLAT | GLM_COLOR);
 	
 	
 	//VBOcruft();
@@ -383,6 +383,7 @@ void initCube(){
 	glmScale(obj, 2);
 	glmFacetNormals(obj);
 	glmVertexNormals(obj, 90);
+	glmInitVBO(obj);
 	
 	glutDisplayFunc(displayCube);
     glutReshapeFunc(reshapeCube);
