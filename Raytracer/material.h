@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include "triple.h"
+#include "image.h"
 
 class Material
 {
@@ -31,7 +32,7 @@ public:
     
     void loadTexture(std::string file);
 
-    Material() { }
+    Material() { texture = NULL; }
 };
 
 #endif /* end of include guard: MATERIAL_H_TWMNT2EJ */

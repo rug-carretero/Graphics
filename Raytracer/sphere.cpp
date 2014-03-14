@@ -15,6 +15,8 @@
 //
 
 #include "sphere.h"
+#include "image.h"
+#include "material.h"
 #include <iostream>
 #include <math.h>
 
@@ -90,8 +92,16 @@ Color Sphere::mapTexture(const Point in){
 	
 	if(!texture) return material->color;
 	
-	double s = acos(in.z / r) / M_PI;
-	double t = acos(x / (r * sin(M_PI * s))) / (2 * M_PI);
+	Vector vn = Vector(0, 1, 0).normalized();
+	Vector ve = Vector(1, 0, 0);
+	Vector vp = (in - position).normalized();
 	
-	return texture.colorAt(s, t);
+	double phi = acos(-vn.dot(vp));
+	double v = 1 - (phi / M_PI);
+	double theta = (acos(vp.dot(ve)) / sin(phi)) / (2.0 * M_PI);
+	double u = 1 - theta;
+	
+	if(vn.cross(ve).dot(vp) > 0 ) u = theta;
+	
+	return texture->colorAt(u, v);
 }

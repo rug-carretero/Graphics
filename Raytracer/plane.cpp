@@ -1,4 +1,6 @@
 #include "plane.h"
+#include "image.h"
+#include "material.h"
 #include <math.h>
 
 Hit Plane::intersect(const Ray& ray){
@@ -18,4 +20,8 @@ Hit Plane::intersect(const Ray& ray){
 	if(N.dot(-ray.D) < 0) N = -N;
 	
 	return Hit(t, N);
+}
+
+Color Plane::mapTexture(const Point in){
+	return material->color;
 }

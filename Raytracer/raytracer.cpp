@@ -49,18 +49,23 @@ Triple parseTriple(const YAML::Node& node)
 Material* Raytracer::parseMaterial(const YAML::Node& node)
 {
     Material *m = new Material();
-    node["color"] >> m->color;	
+    
+    if(const YAML::Node * texnode = node.FindValue("texture")){
+		std::string file;
+		*texnode >> file;
+		
+		m->loadTexture(file);
+		
+		cout << "Texture: " << m->texture->width() << "x" << m->texture->height() << endl;
+	}else{
+		node["color"] >> m->color;	
+		m->texture = NULL;
+	}
+	
     node["ka"] >> m->ka;
     node["kd"] >> m->kd;
     node["ks"] >> m->ks;
     node["n"] >> m->n;
-    
-    if((const YAML::Node * texnode = node.FindValue("texture")) != NULL){
-		std::string file;
-		texnode >> file;
-		
-		m->loadTexture(file);
-	}
     
     return m;
 }
@@ -242,7 +247,9 @@ void Raytracer::renderToFile(const std::string& outputFilename)
 	}
 	cout << endl;
 	cout << "Reflection recursion: " << scene->reflectRecursion << endl;
+	
     scene->render(img);
+    
     cout << "Writing image to " << outputFilename << "..." << endl;
     img.write_png(outputFilename.c_str());
     cout << "Done." << endl;
