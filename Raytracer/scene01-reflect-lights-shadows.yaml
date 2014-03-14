@@ -21,10 +21,10 @@ Camera:
     viewSize: [400,400]
 
 Shadows: true
-MaxRecursionDepth: 0
+MaxRecursionDepth: 4
 
 SuperSampling:
-  factor: 16
+  factor: 4
 
 Lights:
 - position: [-200,600,1500]

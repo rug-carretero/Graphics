@@ -44,16 +44,29 @@ Hit Sphere::intersect(const Ray &ray)
 
 	Vector distance = ray.O - position;
 	Vector direction = ray.D.normalized();
-
-	double discriminant = direction.dot(distance) * direction.dot(distance) - distance.dot(distance) + r*r;
-
+	
+	double a = direction.dot(direction);
+	double b = 2 * (direction.dot(distance));
+	double c = distance.dot(distance) - r * r;
+	double discriminant = b * b - 4 * a * c;
+	
 	if(discriminant < 0) return Hit::NO_HIT();
-
-	double intersect1 = -(direction.dot(distance)) + sqrt(discriminant);
-	double intersect2 = -(direction.dot(distance)) - sqrt(discriminant);
-
-	double t = (distance.length() < r) ? max(intersect1,intersect2) : min(intersect1,intersect2);
-
+	
+	double intersect1 = (-b + sqrt(discriminant)) / (2 * a);
+	double intersect2 = (-b - sqrt(discriminant)) / (2 * a);
+	
+	if(intersect1 < 0 && intersect2 < 0){
+		return Hit::NO_HIT();
+	}
+	
+	double t = 0;
+	
+	if(intersect1 > 0 && intersect2 > 0){
+		t = min(intersect1, intersect2);
+	}else{
+		t = max(intersect1, intersect2);
+	}
+	
 	/****************************************************
 	* RT1.2: NORMAL CALCULATION
 	*
@@ -62,10 +75,23 @@ Hit Sphere::intersect(const Ray &ray)
 	* 
 	* Insert calculation of the sphere's normal at the intersection point.
 	****************************************************/
-
+	
 	Vector N = (ray.O + direction * t - position).normalized();
 	// if(distance.length() < r) N *= -1;
 	if(N.dot(-ray.D) < 0) N = -N;
-
+	
+	//Vector N = (ray.O + direction.normalized() * t - position).normalized();
+	
 	return Hit(t,N);
+}
+
+Color Sphere::mapTexture(const Point in){
+	Image * texture = material->texture;
+	
+	if(!texture) return material->color;
+	
+	double s = acos(in.z / r) / M_PI;
+	double t = acos(x / (r * sin(M_PI * s))) / (2 * M_PI);
+	
+	return texture.colorAt(s, t);
 }

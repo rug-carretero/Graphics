@@ -54,6 +54,14 @@ Material* Raytracer::parseMaterial(const YAML::Node& node)
     node["kd"] >> m->kd;
     node["ks"] >> m->ks;
     node["n"] >> m->n;
+    
+    if((const YAML::Node * texnode = node.FindValue("texture")) != NULL){
+		std::string file;
+		texnode >> file;
+		
+		m->loadTexture(file);
+	}
+    
     return m;
 }
 
