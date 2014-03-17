@@ -123,6 +123,7 @@ Light* Raytracer::parseLight(const YAML::Node& node)
 enum Scene::RenderModes parseRenderMode(const YAML::Node& node){
 	if(node == "zbuffer") return Scene::RenderZBuffer;
 	if(node == "normal") return Scene::RenderNormal;
+	if(node == "gooch") return Scene::RenderGooch;
 	return Scene::RenderPhong;
 }
 

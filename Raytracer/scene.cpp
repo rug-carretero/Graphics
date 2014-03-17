@@ -154,6 +154,9 @@ void Scene::zRender(Image &img){
 }
 
 Color Scene::goochTrace(const Ray& ray){
+	static const Color warm(1.0, 0.0, 0.0);
+	static const Color cool(0.0, 0.0, 1.0);
+	
 	Object * obj;
 	
 	Hit min_hit = trace(ray, &obj);
@@ -212,6 +215,8 @@ Color Scene::goochTrace(const Ray& ray){
 		
 		/* specular */
 		specular += material->ks * pow(max(0.0, Rm.dot(V)), material->n) * lights[i]->color;
+		
+		Il = cool *(1.0 - N.dot(Lm))/2.0 + warm * (1 + N.dot(Lm))/2.0;
 	}
 	Color col = color * Il + specular;
 	
@@ -236,14 +241,16 @@ void Scene::phongRender(Image &img)
 					Ray ray(eye, (pixel-eye).normalized());
 					// col += phongTrace(ray, 0) / (double)superSamples;
 					Color cccol;
+					double dist;
 					switch(renderMode){
 						case RenderPhong: cccol = phongTrace(ray, 0); break;
 						case RenderNormal: cccol = (trace(ray, NULL).N.normalized() + 1.0)/2.0; break;
 						case RenderZBuffer: 
-							double dist = trace(ray, NULL).t;
+							dist = trace(ray, NULL).t;
 							dist = dist < 0 ? 0 : 1.0 - ((dist - zmin) / (zmax - zmin));
 							cccol = Color(dist,dist,dist);
 						break;
+						case RenderGooch: cccol = goochTrace(ray); break;
 					}
 					col += cccol / (double)superSamples;
 				}
@@ -260,6 +267,7 @@ void Scene::render(Image &img){
 			zRender(img); 
 		case RenderNormal: 
 		case RenderPhong: 
+		case RenderGooch:
 			phongRender(img); 
 		break;
 	}

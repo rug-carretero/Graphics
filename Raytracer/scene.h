@@ -47,7 +47,7 @@ public:
     unsigned int getNumObjects() { return objects.size(); }
     unsigned int getNumLights() { return lights.size(); }
 	
-	enum RenderModes {RenderPhong = 2, RenderZBuffer = 4, RenderNormal = 8} renderMode;
+	enum RenderModes {RenderPhong = 1, RenderZBuffer, RenderNormal, RenderGooch} renderMode;
 	bool renderShadows;
 	int superSamples;
 	int reflectRecursion;
