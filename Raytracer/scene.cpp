@@ -123,15 +123,9 @@ Color Scene::phongTrace(const Ray &ray, int level)
 	}
 	Color col = color * Il + specular;
 	
-	//Color reflect = Color(0.0, 0.0, 0.0);
 	if(level < reflectRecursion){
 		Vector r = V - 2 * V.dot(N) * N;
-		//r.normalize();
-		//Object * robj;
-		//Hit rh = trace(Ray(hit + r.normalized(), r), &robj);
-		//if(robj){
-			col += material->ks * phongTrace(Ray(hit + r.normalized(), r), level + 1);
-		//}
+		col += material->ks * phongTrace(Ray(hit + r.normalized(), r), level + 1);
 	}
 	
 	return col;
@@ -141,8 +135,8 @@ void Scene::zRender(Image &img){
     int w = img.width();
     int h = img.height();
 
-    double min = std::numeric_limits<double>::infinity();
-    double max = 0.0;
+    zmin = std::numeric_limits<double>::infinity();
+    zmax = 0.0;
 
 	for (int y = 0; y < h; y++) {
 		for (int x = 0; x < w; x++) {
@@ -152,22 +146,76 @@ void Scene::zRender(Image &img){
 			double dist = trace(ray, NULL).t;
 			
 			if (dist >= 0){
-				if(dist < min) min = dist;
-				if(dist > max) max = dist;
+				if(dist < zmin) zmin = dist;
+				if(dist > zmax) zmax = dist;
 			}
 		}
 	}
+}
 
-    for (int y = 0; y < h; y++) {
-        for (int x = 0; x < w; x++) {
-            Point pixel(x+0.5, h-1-y+0.5, 0);
-            Ray ray(eye, (pixel-eye).normalized());
-            double dist = trace(ray, NULL).t;
-            dist = dist < 0 ? 0 : 1.0 - ((dist - min) / (max - min));
-            Color col = Color(dist,dist,dist);
-            img(x,y) = col;
-        }
-    }
+Color Scene::goochTrace(const Ray& ray){
+	Object * obj;
+	
+	Hit min_hit = trace(ray, &obj);
+	
+	if(!obj) return Vector(0.0, 0.0, 0.0);
+
+	Material *material = obj->material;						//the hit objects material
+	Point hit = ray.at(min_hit.t);								 //the hit point
+	Vector N = min_hit.N.normalized();						 //the normal at hit point
+	Vector V = -ray.D.normalized();								//the view vector
+
+
+	/****************************************************
+	 * This is where you should insert the color
+	 * calculation (Phong model).
+	 *
+	 * Given: material, hit, N, V, lights[]
+	 * Sought: color
+	 *
+	 * Hints: (see triple.h)
+	 *				Triple.dot(Vector) dot product
+	 *				Vector+Vector			vector sum
+	 *				Vector-Vector			vector difference
+	 *				Point-Point				yields vector
+	 *				Vector.normalize() normalizes vector, returns length
+	 *				double*Color				scales each color component (r,g,b)
+	 *				Color*Color				dito
+	 *				pow(a,b)					 a to the power of b
+	 ****************************************************/
+
+	//see also http://en.wikipedia.org/wiki/Phong_reflection_model
+
+	Color color = obj->mapTexture(hit);
+
+	Color Il = Color(0,0,0);
+
+	Color specular = Color(0,0,0);
+
+	for (size_t i = 0; i < lights.size(); i++){
+		
+		Vector Lm = (lights[i]->position - hit).normalized();
+		Vector Rm = 2* Lm.dot(N) * N - Lm;
+		
+		/* ambient */
+		Il += material->ka * lights[i]->color;
+	
+		if(renderShadows){
+			Object * hobj = NULL;
+			trace(Ray(hit, -Lm), &hobj);
+			if(hobj != obj) continue; // light-ray hits object: shadow
+		}
+	
+		/* diffuse */
+		double diffuse = material->kd * max(0.0,Lm.dot(N));
+		Il += diffuse * lights[i]->color;
+		
+		/* specular */
+		specular += material->ks * pow(max(0.0, Rm.dot(V)), material->n) * lights[i]->color;
+	}
+	Color col = color * Il + specular;
+	
+	return col;
 }
 
 void Scene::phongRender(Image &img)
@@ -184,10 +232,20 @@ void Scene::phongRender(Image &img)
 			for(int aax = 0; aax*aax < superSamples; aax++){
 				for(int aay = 0; aay*aay < superSamples; aay++){
 					Point pixel(xx + sqrtSamples*aax, yy - sqrtSamples*aay, 0);
-					//Point pixel(x+.5, h-1-y+.5, 0);
 					pixel += center - right*(double)width/2.0 - (up*(double)height/2.0);
 					Ray ray(eye, (pixel-eye).normalized());
-					col += phongTrace(ray, 0) / (double)superSamples;
+					// col += phongTrace(ray, 0) / (double)superSamples;
+					Color cccol;
+					switch(renderMode){
+						case RenderPhong: cccol = phongTrace(ray, 0); break;
+						case RenderNormal: cccol = (trace(ray, NULL).N.normalized() + 1.0)/2.0; break;
+						case RenderZBuffer: 
+							double dist = trace(ray, NULL).t;
+							dist = dist < 0 ? 0 : 1.0 - ((dist - zmin) / (zmax - zmin));
+							cccol = Color(dist,dist,dist);
+						break;
+					}
+					col += cccol / (double)superSamples;
 				}
 			}
 			(col).clamp();
@@ -196,32 +254,14 @@ void Scene::phongRender(Image &img)
     }
 }
 
-void Scene::normalRender(Image &img){
-	int w = img.width();
-    int h = img.height();
-	Vector right = (center - eye).cross(up).normalized()*up.length();
-	cout << "eye: " << eye << ", center: " << center << ", up: " << up << ", right: " << right << ", in: " << (center - eye) << endl;
-    for (int y = 0; y < h; y++) {
-        for (int x = 0; x < w; x++) {
-            // Point pixel(x+.5 + center.x - (double)w/2.0, h-1-y+.5 + center.y - (double)h/2.0, 0);
-			Point pixel(x+.5, h-1-y+.5, 0);
-			pixel += center - right*(double)width/2.0 - (up*(double)height/2.0);
-			//Point pixel = Point(x - (double)width/2.0, y - (double)height/2.0, 0);
-			//pixel = pixel * -up * -right + eye + (center - eye);
-			Ray ray(eye, (pixel - eye).normalized());
-            //Color col = normalTrace(ray);
-            Color col = (trace(ray, NULL).N.normalized() + 1.0)/2.0;
-            col.clamp();
-            img(x,y) = col;
-        }
-    }
-}
-
 void Scene::render(Image &img){
 	switch(renderMode){
-		case RenderPhong: phongRender(img); break;
-		case RenderZBuffer: zRender(img); break;
-		case RenderNormal: normalRender(img); break;
+		case RenderZBuffer: 
+			zRender(img); 
+		case RenderNormal: 
+		case RenderPhong: 
+			phongRender(img); 
+		break;
 	}
 }
 

@@ -158,7 +158,8 @@ bool Raytracer::readScene(const std::string& inputFilename)
         if (parser) {
             YAML::Node doc;
             parser.GetNextDocument(doc);
-
+			
+			scene->renderMode = Scene::RenderPhong;
             // Read scene configuration options
 			if(const YAML::Node * rMode = doc.FindValue("RenderMode")){
 				scene->renderMode = parseRenderMode(*rMode);
@@ -239,11 +240,11 @@ void Raytracer::renderToFile(const std::string& outputFilename)
 {
     Image img(scene->width,scene->height);
     cout << "Tracing..." << endl;
-	cout << "Render mode: ";
+	cout << "Render mode: ";// << scene->renderMode;
 	switch(scene->renderMode){
-		case Scene::RenderPhong: cout << "phong"; break;
-		case Scene::RenderZBuffer: cout << "zbuffer"; break;
-		case Scene::RenderNormal: cout << "normal"; break;
+		case Scene::RenderPhong: cout << " phong"; break;
+		case Scene::RenderZBuffer: cout << " zbuffer"; break;
+		case Scene::RenderNormal: cout << " normal"; break;
 	}
 	cout << endl;
 	cout << "Reflection recursion: " << scene->reflectRecursion << endl;

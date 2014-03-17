@@ -19,6 +19,7 @@ Camera:
     up: [0,1,0]
     viewSize: [800,800]
 
+# RenderMode: zbuffer
 Shadows: true
 MaxRecursionDepth: 0
 SuperSampling:
