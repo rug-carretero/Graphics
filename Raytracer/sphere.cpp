@@ -100,6 +100,7 @@ Color Sphere::mapTexture(const Point in){
 	Vector ve = Vector(1, 0, 0);
 	Vector vp = (in - position).normalized();
 
+	Vector rotation = Vector (0,0,1);
 
 	double phi = acos(-vn.dot(vp));
 	double v = 1 - (phi / M_PI);
@@ -111,14 +112,17 @@ Color Sphere::mapTexture(const Point in){
 
 	//working, but with no variable angle
 	Vector d = (position - in).normalized();	
-	//u = 0.5 + atan2(d.z,d.x) / (2.0 * M_PI);
-	//v = 0.5 - asin(d.y) / M_PI;
+	phi = acos(vn.dot(rotation));
+	theta = acos(rotation.dot(ve));
+
+	u = 0.5 + atan2(d.z+cos(theta),d.x+sin(phi)) / (2.0 * M_PI);
+	v = 0.5 - asin(d.y+ cos(phi)) / M_PI;
 
 	if(u < umin) umin = u;
 	if(u > umax) umax = u;
 
 
-	cout << "umin" << umin << "umax" << umax << endl;
+	//cout << "umin" << umin << "umax" << umax << endl;
 
 	return texture->colorAt(u, v);
 }
