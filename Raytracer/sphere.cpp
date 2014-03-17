@@ -92,16 +92,25 @@ Color Sphere::mapTexture(const Point in){
 	
 	if(!texture) return material->color;
 	
+
+	//with variable angle, but distorted
 	Vector vn = Vector(0, 1, 0).normalized();
 	Vector ve = Vector(1, 0, 0);
 	Vector vp = (in - position).normalized();
-	
+
+
 	double phi = acos(-vn.dot(vp));
 	double v = 1 - (phi / M_PI);
 	double theta = (acos(vp.dot(ve)) / sin(phi)) / (2.0 * M_PI);
 	double u = 1 - theta;
-	
+
 	if(vn.cross(ve).dot(vp) > 0 ) u = theta;
-	
+
+
+	//working, but with no variable angle
+	Vector d = (position - in).normalized();	
+	//u = 0.5 + atan2(d.z,d.x) / (2.0 * M_PI);
+	//v = 0.5 - asin(d.y) / M_PI;
+
 	return texture->colorAt(u, v);
 }
