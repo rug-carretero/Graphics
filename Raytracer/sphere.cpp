@@ -90,6 +90,8 @@ Hit Sphere::intersect(const Ray &ray)
 Color Sphere::mapTexture(const Point in){
 	Image * texture = material->texture;
 	
+	static double umin = 4, umax = -4;
+
 	if(!texture) return material->color;
 	
 
@@ -111,6 +113,12 @@ Color Sphere::mapTexture(const Point in){
 	Vector d = (position - in).normalized();	
 	//u = 0.5 + atan2(d.z,d.x) / (2.0 * M_PI);
 	//v = 0.5 - asin(d.y) / M_PI;
+
+	if(u < umin) umin = u;
+	if(u > umax) umax = u;
+
+
+	cout << "umin" << umin << "umax" << umax << endl;
 
 	return texture->colorAt(u, v);
 }
