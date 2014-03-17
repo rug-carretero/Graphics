@@ -52,6 +52,11 @@ public:
 	int superSamples;
 	int reflectRecursion;
 	
+	double alpha;
+	double beta;
+	double goochB;
+	double goochY;
+	
     Triple eye;
     Triple center;
     Vector up;

@@ -19,7 +19,11 @@ GoochParameters:
   alpha: 0.25
   beta: 0.5
 
-Eye: [200,200,1000]  
+Camera:
+    eye: [200,200,1000]
+    center: [200,200,0]
+    up: [0,1,0]
+    viewSize: [400,400]
 
 Lights:
 - position: [-1000,600,400]

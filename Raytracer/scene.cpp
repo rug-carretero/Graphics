@@ -154,9 +154,6 @@ void Scene::zRender(Image &img){
 }
 
 Color Scene::goochTrace(const Ray& ray){
-	static const Color warm(1.0, 0.0, 0.0);
-	static const Color cool(0.0, 0.0, 1.0);
-	
 	Object * obj;
 	
 	Hit min_hit = trace(ray, &obj);
@@ -168,29 +165,6 @@ Color Scene::goochTrace(const Ray& ray){
 	Vector N = min_hit.N.normalized();						 //the normal at hit point
 	Vector V = -ray.D.normalized();								//the view vector
 
-
-	/****************************************************
-	 * This is where you should insert the color
-	 * calculation (Phong model).
-	 *
-	 * Given: material, hit, N, V, lights[]
-	 * Sought: color
-	 *
-	 * Hints: (see triple.h)
-	 *				Triple.dot(Vector) dot product
-	 *				Vector+Vector			vector sum
-	 *				Vector-Vector			vector difference
-	 *				Point-Point				yields vector
-	 *				Vector.normalize() normalizes vector, returns length
-	 *				double*Color				scales each color component (r,g,b)
-	 *				Color*Color				dito
-	 *				pow(a,b)					 a to the power of b
-	 ****************************************************/
-
-	//see also http://en.wikipedia.org/wiki/Phong_reflection_model
-
-	Color color = obj->mapTexture(hit);
-
 	Color Il = Color(0,0,0);
 
 	Color specular = Color(0,0,0);
@@ -199,26 +173,22 @@ Color Scene::goochTrace(const Ray& ray){
 		
 		Vector Lm = (lights[i]->position - hit).normalized();
 		Vector Rm = 2* Lm.dot(N) * N - Lm;
-		
-		/* ambient */
-		Il += material->ka * lights[i]->color;
 	
 		if(renderShadows){
 			Object * hobj = NULL;
 			trace(Ray(hit, -Lm), &hobj);
 			if(hobj != obj) continue; // light-ray hits object: shadow
 		}
-	
-		/* diffuse */
-		double diffuse = material->kd * max(0.0,Lm.dot(N));
-		Il += diffuse * lights[i]->color;
 		
 		/* specular */
 		specular += material->ks * pow(max(0.0, Rm.dot(V)), material->n) * lights[i]->color;
 		
-		Il = cool *(1.0 - N.dot(Lm))/2.0 + warm * (1 + N.dot(Lm))/2.0;
+		Color kd = lights[i]->color * material->color * material->kd;
+		Color kCool = Color(0.0, 0.0, goochB) + alpha * kd;
+		Color kWarm = Color(goochY, goochY, 0.0) + beta * kd;
+		Il += kCool *(1.0 - N.dot(Lm))/2.0 + kWarm * (1 + N.dot(Lm))/2.0;
 	}
-	Color col = color * Il + specular;
+	Color col = Il + specular;
 	
 	return col;
 }
