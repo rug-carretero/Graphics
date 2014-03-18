@@ -12,16 +12,13 @@ private:
 	
 	Triangle * glm2obj(GLMtriangle t);
 public:
-	Mesh(std::string file) : file(file) {
+	Mesh(std::string file, float scale) : file(file), scale(scale) {
 		model = glmReadOBJ(file.c_str()); 
-		glmScale(model, 100.0); 
-		
-		size_t i;
-		for(i = 0; i < model->numvertices; i++){
-			cout << model->vertices[3 * i] << ", " << model->vertices[3 * i + 1] << ", " << model->vertices[3 * i + 2] << endl;
-		}
+		glmScale(model, scale); 
 	}
 	
 	virtual Hit intersect(const Ray& ray);
 	virtual Color mapTexture(const Point in);
+	
+	float scale;
 };

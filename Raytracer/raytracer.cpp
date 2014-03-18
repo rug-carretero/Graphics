@@ -106,8 +106,10 @@ Object* Raytracer::parseObject(const YAML::Node& node)
     /*complete different type of object reading*/
     if(objectType == "mesh"){
       std::string filename;
+	  float scale;
       node["filename"] >> filename;
-      Mesh * meshobject = new Mesh(filename);
+	  node["scale"] >> scale;
+      Mesh * meshobject = new Mesh(filename, scale);
       returnObject = meshobject;
     }
 

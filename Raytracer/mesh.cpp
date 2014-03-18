@@ -19,6 +19,7 @@ Hit Mesh::intersect(const Ray& ray){
 		if(h.t < minHit.t){
 			minHit = h;
 		}
+		delete t;
 	}
 	
 	return minHit;

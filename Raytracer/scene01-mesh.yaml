@@ -13,8 +13,8 @@
 #  it should be clear that the #-character can be used to insert comments.
 
 Camera:
-    eye: [300,300,400]
-    center: [0,0,0]
+    eye: [100,200,200]
+    center: [0,200,0]
     up: [0,1,0]
     viewSize: [400,400]
 
@@ -26,7 +26,8 @@ Lights:
 
 Objects:
 - type: mesh
-  filename: "../OpenGL/obj/cube.obj"
+  filename: "../OpenGL/obj/devilduk.obj"
+  scale: 600
   material: # blue
     color: [0.0,0.0,1.0]
     ka: 0.2
