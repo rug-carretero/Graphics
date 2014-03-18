@@ -174,16 +174,17 @@ Color Scene::goochTrace(const Ray& ray){
 		Vector Lm = (lights[i]->position - hit).normalized();
 		Vector Rm = 2* Lm.dot(N) * N - Lm;
 	
-		if(renderShadows){
-			Object * hobj = NULL;
-			trace(Ray(hit, -Lm), &hobj);
-			if(hobj != obj) continue; // light-ray hits object: shadow
-		}
-		
+		//~ if(renderShadows){
+			//~ Object * hobj = NULL;
+			//~ trace(Ray(hit, -Lm), &hobj);
+			//~ if(hobj != obj) {Il += material->color; continue;} // light-ray hits object: shadow
+		//~ }
+		//~ 
 		/* specular */
 		specular += material->ks * pow(max(0.0, Rm.dot(V)), material->n) * lights[i]->color;
 		
 		Color kd = lights[i]->color * material->color * material->kd;
+		
 		Color kCool = Color(0.0, 0.0, goochB) + alpha * kd;
 		Color kWarm = Color(goochY, goochY, 0.0) + beta * kd;
 		Il += kCool *(1.0 - N.dot(Lm))/2.0 + kWarm * (1 + N.dot(Lm))/2.0;
@@ -232,15 +233,8 @@ void Scene::phongRender(Image &img)
 }
 
 void Scene::render(Image &img){
-	switch(renderMode){
-		case RenderZBuffer: 
-			zRender(img); 
-		case RenderNormal: 
-		case RenderPhong: 
-		case RenderGooch:
-			phongRender(img); 
-		break;
-	}
+	if (renderMode == RenderZBuffer) zRender(img);
+	phongRender(img);
 }
 
 void Scene::addObject(Object *o)
