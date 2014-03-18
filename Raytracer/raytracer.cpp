@@ -49,11 +49,24 @@ Triple parseTriple(const YAML::Node& node)
 Material* Raytracer::parseMaterial(const YAML::Node& node)
 {
     Material *m = new Material();
-    node["color"] >> m->color;	
+    
+    if(const YAML::Node * texnode = node.FindValue("texture")){
+		std::string file;
+		*texnode >> file;
+		
+		m->loadTexture(file);
+		
+		cout << "Texture: " << m->texture->width() << "x" << m->texture->height() << endl;
+	}else{
+		node["color"] >> m->color;	
+		m->texture = NULL;
+	}
+	
     node["ka"] >> m->ka;
     node["kd"] >> m->kd;
     node["ks"] >> m->ks;
     node["n"] >> m->n;
+    
     return m;
 }
 
@@ -110,6 +123,7 @@ Light* Raytracer::parseLight(const YAML::Node& node)
 enum Scene::RenderModes parseRenderMode(const YAML::Node& node){
 	if(node == "zbuffer") return Scene::RenderZBuffer;
 	if(node == "normal") return Scene::RenderNormal;
+	if(node == "gooch") return Scene::RenderGooch;
 	return Scene::RenderPhong;
 }
 
@@ -145,10 +159,18 @@ bool Raytracer::readScene(const std::string& inputFilename)
         if (parser) {
             YAML::Node doc;
             parser.GetNextDocument(doc);
-
+			
+			scene->renderMode = Scene::RenderPhong;
             // Read scene configuration options
 			if(const YAML::Node * rMode = doc.FindValue("RenderMode")){
 				scene->renderMode = parseRenderMode(*rMode);
+				if(scene->renderMode == Scene::RenderGooch){
+					const YAML::Node& goochparms = doc["GoochParameters"];
+					goochparms["alpha"] >> scene->alpha;
+					goochparms["beta"] >> scene->beta;
+					goochparms["b"] >> scene->goochB;
+					goochparms["y"] >> scene->goochY;
+				}
 			}
 			if(const YAML::Node * rShadows = doc.FindValue("Shadows")){
 				scene->renderShadows = parseBool(*rShadows);
@@ -226,15 +248,18 @@ void Raytracer::renderToFile(const std::string& outputFilename)
 {
     Image img(scene->width,scene->height);
     cout << "Tracing..." << endl;
-	cout << "Render mode: ";
+	cout << "Render mode: ";// << scene->renderMode;
 	switch(scene->renderMode){
 		case Scene::RenderPhong: cout << "phong"; break;
 		case Scene::RenderZBuffer: cout << "zbuffer"; break;
 		case Scene::RenderNormal: cout << "normal"; break;
+		case Scene::RenderGooch: cout << "gooch"; break;
 	}
 	cout << endl;
 	cout << "Reflection recursion: " << scene->reflectRecursion << endl;
+	
     scene->render(img);
+    
     cout << "Writing image to " << outputFilename << "..." << endl;
     img.write_png(outputFilename.c_str());
     cout << "Done." << endl;

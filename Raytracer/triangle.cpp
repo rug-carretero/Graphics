@@ -1,4 +1,6 @@
 #include "triangle.h"
+#include "image.h"
+#include "material.h"
 #include <math.h>
 #include <iostream>
 
@@ -32,4 +34,8 @@ Hit Triangle::intersect(const Ray& ray){
 	if(N.dot(-ray.D) < 0) N = -N;
 	
 	return Hit(dist, N);
+}
+
+Color Triangle::mapTexture(const Point in){
+	return material->color;
 }

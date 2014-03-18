@@ -15,6 +15,8 @@
 //
 
 #include "sphere.h"
+#include "image.h"
+#include "material.h"
 #include <iostream>
 #include <math.h>
 
@@ -44,16 +46,29 @@ Hit Sphere::intersect(const Ray &ray)
 
 	Vector distance = ray.O - position;
 	Vector direction = ray.D.normalized();
-
-	double discriminant = direction.dot(distance) * direction.dot(distance) - distance.dot(distance) + r*r;
-
+	
+	double a = direction.dot(direction);
+	double b = 2 * (direction.dot(distance));
+	double c = distance.dot(distance) - r * r;
+	double discriminant = b * b - 4 * a * c;
+	
 	if(discriminant < 0) return Hit::NO_HIT();
-
-	double intersect1 = -(direction.dot(distance)) + sqrt(discriminant);
-	double intersect2 = -(direction.dot(distance)) - sqrt(discriminant);
-
-	double t = (distance.length() < r) ? max(intersect1,intersect2) : min(intersect1,intersect2);
-
+	
+	double intersect1 = (-b + sqrt(discriminant)) / (2 * a);
+	double intersect2 = (-b - sqrt(discriminant)) / (2 * a);
+	
+	if(intersect1 < 0 && intersect2 < 0){
+		return Hit::NO_HIT();
+	}
+	
+	double t = 0;
+	
+	if(intersect1 > 0 && intersect2 > 0){
+		t = min(intersect1, intersect2);
+	}else{
+		t = max(intersect1, intersect2);
+	}
+	
 	/****************************************************
 	* RT1.2: NORMAL CALCULATION
 	*
@@ -62,10 +77,52 @@ Hit Sphere::intersect(const Ray &ray)
 	* 
 	* Insert calculation of the sphere's normal at the intersection point.
 	****************************************************/
-
+	
 	Vector N = (ray.O + direction * t - position).normalized();
 	// if(distance.length() < r) N *= -1;
 	if(N.dot(-ray.D) < 0) N = -N;
-
+	
+	//Vector N = (ray.O + direction.normalized() * t - position).normalized();
+	
 	return Hit(t,N);
+}
+
+Color Sphere::mapTexture(const Point in){
+	Image * texture = material->texture;
+	
+	static double umin = 4, umax = -4;
+
+	if(!texture) return material->color;
+	
+
+	//with variable angle, but distorted
+	Vector vn = Vector(0, 1, 0).normalized();
+	Vector ve = Vector(1, 0, 0);
+	Vector vp = (in - position).normalized();
+
+	Vector rotation = Vector (0,0,1);
+
+	double phi = acos(-vn.dot(vp));
+	double v = 1 - (phi / M_PI);
+	double theta = (acos(vp.dot(ve)) / sin(phi)) / (2.0 * M_PI);
+	double u = 1 - theta;
+
+	if(vn.cross(ve).dot(vp) > 0 ) u = theta;
+
+
+	//working, but with no variable angle
+	Vector d = (position - in).normalized();	
+	phi = acos(vn.dot(rotation));
+	theta = acos(rotation.dot(ve));
+
+	u = 0.5 + atan2(d.z+cos(theta),d.x+sin(phi)) / (2.0 * M_PI);
+	v = 0.5 - asin(d.y+ cos(phi)) / M_PI;
+
+	if(u < umin) umin = u;
+	if(u > umax) umax = u;
+
+
+	//cout << "umin" << umin << "umax" << umax << endl;
+
+	return texture->colorAt(u, v);
 }
