@@ -10,18 +10,14 @@
       coordinate generation (spheremap and planar projections) + more.
 
  */
+ 
+typedef double GLfloat;
+typedef unsigned int GLuint;
+typedef void GLvoid;
+typedef int GLboolean;
 
-/* Apparently Mac OS X puts the GLUT headers somewhere different. 
-   For windows we use freeglut. 
- */
-#if defined(__APPLE__)&& defined(__MACH__)
-#include <GLUT/glut.h>
-#elif defined(_WIN32)
-#include <GL/freeglut.h>
-#else
-#include <GL/glut.h>
-#endif
-
+#define GL_TRUE 1
+#define GL_FALSE 0
 
 #ifdef __cplusplus
 extern "C" {
@@ -203,7 +199,7 @@ glmDelete(GLMmodel* model);
  * filename - name of the file containing the Wavefront .OBJ format data.  
  */
 GLMmodel* 
-glmReadOBJ(char* filename);
+glmReadOBJ(const char* filename);
 
 /* glmWriteOBJ: Writes a model description in Wavefront .OBJ format to
  * a file.
