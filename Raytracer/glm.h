@@ -11,7 +11,7 @@
 
  */
  
-typedef double GLfloat;
+typedef float GLfloat;
 typedef unsigned int GLuint;
 typedef void GLvoid;
 typedef int GLboolean;

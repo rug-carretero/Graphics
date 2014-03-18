@@ -17,6 +17,7 @@
 #include "sphere.h"
 #include "plane.h"
 #include "triangle.h"
+#include "mesh.h"
 #include "material.h"
 #include "light.h"
 #include "image.h"
@@ -102,17 +103,17 @@ Object* Raytracer::parseObject(const YAML::Node& node)
       Triangle * triangle = new Triangle(v0, v1, v2);
       returnObject = triangle;
     }
+    /*complete different type of object reading*/
+    if(objectType == "mesh"){
+      std::string filename;
+      node["filename"] >> filename;
+      Mesh * meshobject = new Mesh(filename);
+      returnObject = meshobject;
+    }
 
     if (returnObject) {
         // read the material and attach to object
         returnObject->material = parseMaterial(node["material"]);
-    }
-    /*complete different type of object reading*/
-    if(objectType == "meshobject"){
-      std::string filename;
-      node["filename"] >> filename;
-      mesh meshobject - new Mesh(filename);
-      returnObject = meshobject;
     }
 
 
