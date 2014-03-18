@@ -111,7 +111,7 @@ Object* Raytracer::parseObject(const YAML::Node& node)
     if(objectType == "meshobject"){
       std::string filename;
       node["filename"] >> filename;
-      mesh meshobject - new Mesh(filename);
+      Mesh meshobject - new Mesh(filename);
       returnObject = meshobject;
     }
 
