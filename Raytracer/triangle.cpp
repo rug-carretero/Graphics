@@ -5,35 +5,49 @@
 #include <iostream>
 
 Hit Triangle::intersect(const Ray& ray){
-	Vector N = (v1 - v0).cross(v2 - v0);
-	double nDotRay = N.dot(ray.D);
-	
-	if(nDotRay > -1e-6 && nDotRay < 1e-6){
-		return Hit::NO_HIT();
-	}
-	
-	double dist = N.dot(v0);
-	double t = -(N.dot(ray.O) + dist) / nDotRay;
-	
-	if(t < 0){
-		return Hit::NO_HIT();
-	}
-	
-	Point P = ray.O + t * ray.D;
-	
-	Vector C;
-	
-	C = (v1 - v0).cross(P - v0);
-	if(N.dot(C) < 0) return Hit::NO_HIT();
-	C = (v2 - v1).cross(P - v1);
-	if(N.dot(C) < 0) return Hit::NO_HIT();
-	C = (v0 - v2).cross(P - v2);
-	if(N.dot(C) < 0) return Hit::NO_HIT();
-	
-	N = N.normalized();
-	if(N.dot(-ray.D) < 0) N = -N;
-	
-	return Hit(dist, N);
+
+  //source: http://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+
+#define EPSILON 0.000001
+ 
+  Vector e1, e2;  //Edge1, Edge2
+  Vector P, Q, T, N;
+  float det, inv_det, u, v;
+  float t;
+ 
+  e1 = v1 - v0;
+  e2 =  v2 - v0;
+
+  N = e1.cross(e2);
+
+  P = ray.D.cross(e2);
+
+
+  det = e1.dot(P);
+  if(det > -std::numeric_limits<double>::epsilon() && det < std::numeric_limits<double>::epsilon()) return Hit::NO_HIT();
+  inv_det = 1.f / det;
+ 
+  T = ray.O - v0;
+ 
+  u = T.dot(P) * inv_det;
+  if(u < 0.f || u > 1.f) return Hit::NO_HIT();
+ 
+  Q = T.cross(e1);
+ 
+  v = ray.D.dot(Q) * inv_det;
+
+  if(v < 0.f || u + v  > 1.f) return Hit::NO_HIT();
+ 
+  t = e2.dot(Q) * inv_det;
+ 
+  if(t > std::numeric_limits<double>::epsilon()) { //ray intersection
+    //*out = t;
+    return Hit(t,N);
+  }
+ 
+  // No hit, no win
+  return Hit::NO_HIT();
+
 }
 
 Color Triangle::mapTexture(const Point in){
