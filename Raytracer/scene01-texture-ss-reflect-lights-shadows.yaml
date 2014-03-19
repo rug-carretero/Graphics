@@ -63,6 +63,7 @@ Objects:
   position: [140,220,400]
   radius: 50
   angle: 90
+  axis: [0,0,1]
   material:
     texture: bluegrid.png
     ka: 0.2

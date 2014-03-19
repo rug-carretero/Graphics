@@ -91,14 +91,13 @@ Color Sphere::mapTexture(const Point in){
 	Image * texture = material->texture;
 	
 	if(!texture) return material->color;
-	
 
 	//with variable angle, but distorted
-	Vector vn = Vector(0, 1, 0).normalized();
-	Vector ve = Vector(1, 0, 0);
+	Vector vn = Vector(0, 1, 0).rotate(angle, axis);
+	cout << "vn"<< vn.x << " " << vn.y << " " << vn.z << " " << endl;
+	Vector ve = Vector(1, 0, 0).rotate(angle, axis);
+	cout << "ve" << ve.x << " " << ve.y << " " << ve.z << " " << endl;
 	Vector vp = (in - position).normalized();
-
-	Vector rotation = Vector (0,1,0);
 
 	double phi = acos(-vn.dot(vp));
 	double v = 1 - (phi / M_PI);
@@ -110,17 +109,9 @@ Color Sphere::mapTexture(const Point in){
 
 	//working, but with no variable angle
 	Vector d = (position - in).normalized();	
-	//phi = acos(vn.dot(rotation));
-	//theta = asin(rotation.dot(ve));
-
-	/*d.z *= sin(phi) * cos(theta);
-	d.x *= sin(phi) * sin(theta);
-	d.y *= cos(phi);
-
-	d.normalize();*/
-
 	u = 0.5 + atan2(d.z,d.x) / (2.0 * M_PI);
 	v = 0.5 - asin(d.y) / M_PI;
+
 	
 	return texture->colorAt(u, v);
 }
