@@ -194,11 +194,17 @@ Color Scene::goochTrace(const Ray& ray){
 	return col;
 }
 
+
+/*Point p = camera.center
+                        + (pixel.x - .5 * camera.width) * camera.right()
+                        + (pixel.y - .5 * camera.height) * -camera.up;
+
+*/
 void Scene::phongRender(Image &img)
 {
     int w = img.width();
     int h = img.height();
-	Vector right = (center - eye).cross(up).normalized()*up.length();
+    Vector right = (center - eye).normalized().cross(up).normalized()*up.length();
 	double sqrtSamples = 1.0/sqrt((double)superSamples);
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
@@ -208,7 +214,11 @@ void Scene::phongRender(Image &img)
 			for(int aax = 0; aax*aax < superSamples; aax++){
 				for(int aay = 0; aay*aay < superSamples; aay++){
 					Point pixel(xx + sqrtSamples*aax, yy - sqrtSamples*aay, 0);
-					pixel += center - right*(double)width/2.0 - (up*(double)height/2.0);
+					
+
+					pixel = center + (pixel.x - (double)width/2.0)*right + (pixel.y - (double)height/2.0)*up;
+					
+
 					Ray ray(eye, (pixel-eye).normalized());
 					// col += phongTrace(ray, 0) / (double)superSamples;
 					Color cccol;
