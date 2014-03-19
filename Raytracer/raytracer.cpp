@@ -18,6 +18,7 @@
 #include "plane.h"
 #include "triangle.h"
 #include "mesh.h"
+#include "quad.h"
 #include "material.h"
 #include "light.h"
 #include "image.h"
@@ -112,6 +113,17 @@ Object* Raytracer::parseObject(const YAML::Node& node)
       Mesh * meshobject = new Mesh(filename, scale);
       returnObject = meshobject;
     }
+	
+	if(objectType == "quad"){
+		Point center;
+		node["center"] >> center;
+		Vector normal;
+		node["normal"] >> normal;
+		int radius;
+		node["radius"] >> radius;
+		Quad * quad = new Quad(center, normal, radius);
+		returnObject = quad;
+	}
 
     if (returnObject) {
         // read the material and attach to object
