@@ -5,7 +5,7 @@
 *
 */
 
-
+#define GL_GLEXT_PROTOTYPES
 // If windows is used, windows.h should be included (before gl.h and glu.h)
 #if defined(_WIN32)
 #include <windows.h>
@@ -31,6 +31,8 @@
 #else
 #include <GL/glut.h>
 #endif
+
+#include <GL/gl.h>
 
 #define M_PI 3.141592653
 #define GOLDEN_RATIO (.5 * (1 + sqrt(5.0)))
@@ -294,7 +296,7 @@ void rePerspectifySphere(){
 
 void displaySphere(void)
 {
-		rePerspectifySphere();
+	rePerspectifySphere();
 	
     /* Clear all pixels */
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
@@ -368,6 +370,16 @@ void initSphere(){
     glutReshapeFunc(reshapeSphere);
 }
 
+void initGoochVars(GLuint shaders){
+	GLint goochWarmColor = glGetUniformLocation(shaders, "WarmColour");
+	glUniform3f(goochWarmColor, 0.55, 0.55, 0.0);
+	GLint goochCoolColor = glGetUniformLocation(shaders, "CoolColour");
+	glUniform3f(goochCoolColor, 0.0, 0.0, 0.3);
+	/*GLint goochSurfColor = glGetUniformLocation(shaders, "SurfaceColour");
+	glUniform3f(goochWarmColor, 0.5, 0.5, 0.5);*/
+	GLint goochLineWidth= glGetUniformLocation(shaders, "OutlineWidth");
+	glUniform1f(goochLineWidth, 0.1);
+}
 
 int main(int argc, char** argv)
 {
@@ -398,7 +410,8 @@ int main(int argc, char** argv)
     glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-	//initGLSLProgram("normalvertex.glsl","normalfragment.glsl");
+	GLuint shaders = initGLSLProgram("vertexgooch.glsl","fragmentgooch.glsl");
+	initGoochVars(shaders);
 
     /* Register GLUT callback functions */
     glutKeyboardFunc(keyboard);
@@ -406,7 +419,7 @@ int main(int argc, char** argv)
 	glutMotionFunc(motion);
 	glutMouseFunc(mouse);
 	
-	initCube();
+	initSphere();
 
     glutMainLoop();
 
