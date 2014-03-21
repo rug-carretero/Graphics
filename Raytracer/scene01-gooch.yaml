@@ -18,6 +18,11 @@ GoochParameters:
   y: 0.3
   alpha: 0.25
   beta: 0.5
+  
+Shadows: 1
+MaxRecursionDepth: 2
+SuperSampling:
+  factor: 4
 
 Camera:
     eye: [200,200,1000]
@@ -69,21 +74,23 @@ Objects:
 - type: sphere
   position: [110,130,200]
   radius: 50
+  angle: 0
+  axis: [0, 0, 0]
   material: # orange
-    color: [1.0,0.5,0.0]
+    texture: bluegrid.png
     ka: 0.2
     kd: 0.8
     ks: 0.5
     n: 32
-#- type: sphere
-#  position: [200,200,-1000]
-#  radius: 1000
-#  material: # grey
-#    color: [0.4,0.4,0.4]
-#    ka: 0.2
-#    kd: 0.8
-#    ks: 0
-#    n: 1
+- type: sphere
+  position: [200,200,-1000]
+  radius: 1000
+  material: # grey
+    color: [0.4,0.4,0.4]
+    ka: 0.2
+    kd: 0.8
+    ks: 0
+    n: 1
 
 - type: triangle
   v0: [200,160,200]

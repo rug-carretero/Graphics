@@ -40,24 +40,10 @@ Hit Scene::trace(const Ray& ray, Object ** object){
     if(object){
 		*object = obj;
 	}
+	
+	if(min_hit.t < 0) cout << "Min-hit..? " << min_hit.t << endl;
 
     return min_hit;
-}
-
-Color Scene::phongReflect(const Ray &ray, int level, Object * src){
-	if(!level) return Color(0.0, 0.0, 0.0);
-	
-	Object * obj;
-	Hit h = trace(ray, &obj);
-	
-	if(!obj || obj == src) return Color(0.0, 0.0, 0.0);
-	
-	Vector r = ray.D - 2*ray.D.dot(h.N)*h.N;
-	Ray reflect(ray.at(h.t), r);
-	
-	Color specular = src->material->ks * pow(max(0.0, r.dot(ray.D)), src->material->n) * obj->material->color;
-	
-	return specular + phongReflect(reflect, --level, obj);
 }
 
 Color Scene::phongTrace(const Ray &ray, int level)
@@ -110,8 +96,11 @@ Color Scene::phongTrace(const Ray &ray, int level)
 	
 		if(renderShadows){
 			Object * hobj = NULL;
-			trace(Ray(hit, -Lm), &hobj);
-			if(hobj != obj) continue; // light-ray hits object: shadow
+			Hit h = trace(Ray(lights[i]->position, -Lm), &hobj);
+			if(h.t < (lights[i]->position - hit).length() - 0.01){
+				//cout << "t: " << min_hit.t << ", h-t: " << h.t << endl;
+				continue; // light-ray hits object: shadow
+			}
 		}
 	
 		/* diffuse */
@@ -124,7 +113,7 @@ Color Scene::phongTrace(const Ray &ray, int level)
 	Color col = color * Il + specular;
 	
 	if(level < reflectRecursion){
-		Vector r = V - 2 * V.dot(N) * N;
+		Vector r = - V + 2 * V.dot(N) * N;
 		col += material->ks * phongTrace(Ray(hit + r.normalized(), r), level + 1);
 	}
 	
@@ -173,33 +162,21 @@ Color Scene::goochTrace(const Ray& ray){
 		
 		Vector Lm = (lights[i]->position - hit).normalized();
 		Vector Rm = 2* Lm.dot(N) * N - Lm;
-	
-		//~ if(renderShadows){
-			//~ Object * hobj = NULL;
-			//~ trace(Ray(hit, -Lm), &hobj);
-			//~ if(hobj != obj) {Il += material->color; continue;} // light-ray hits object: shadow
-		//~ }
-		//~ 
-		/* specular */
-		specular += material->ks * pow(max(0.0, Rm.dot(V)), material->n) * lights[i]->color;
 		
 		Color kd = lights[i]->color * material->color * material->kd;
 		
 		Color kCool = Color(0.0, 0.0, goochB) + alpha * kd;
 		Color kWarm = Color(goochY, goochY, 0.0) + beta * kd;
 		Il += kCool *(1.0 - N.dot(Lm))/2.0 + kWarm * (1 + N.dot(Lm))/2.0;
+		 
+		/* specular */
+		specular += material->ks * pow(max(0.0, Rm.dot(V)), material->n) * lights[i]->color;
 	}
 	Color col = Il + specular;
 	
 	return col;
 }
 
-
-/*Point p = camera.center
-                        + (pixel.x - .5 * camera.width) * camera.right()
-                        + (pixel.y - .5 * camera.height) * -camera.up;
-
-*/
 void Scene::phongRender(Image &img)
 {
     int w = img.width();
@@ -215,10 +192,8 @@ void Scene::phongRender(Image &img)
 				for(int aay = 0; aay*aay < superSamples; aay++){
 					Point pixel(xx + sqrtSamples*aax, yy - sqrtSamples*aay, 0);
 					
-
 					pixel = center + (pixel.x - (double)width/2.0)*right + (pixel.y - (double)height/2.0)*up;
 					
-
 					Ray ray(eye, (pixel-eye).normalized());
 					// col += phongTrace(ray, 0) / (double)superSamples;
 					Color cccol;
