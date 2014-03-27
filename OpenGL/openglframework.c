@@ -46,7 +46,7 @@
 
 #include "glm.h"
 #include "glslshaders.h"
-
+#include "lodepng.h"
 
  
 double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
@@ -55,11 +55,19 @@ double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
 	
 	phi = 0.0, theta = 0.0, dist = 5.0,
 	fovy = 60.0, vogelRadius = 10.0,
-	movementscale = 0.1;
+	movementscale = 0.1,
 	
-int mouseX = 0, mouseY = 0, width, height, apertureSamples = 8;
+	spherePhi = 0.0;
+	
+int mouseX = 0, mouseY = 0, width, height, apertureSamples = 1;
+
+int prevMs = 0;
 
 GLMmodel * obj;
+
+GLUquadric* quadric;
+
+GLuint myTexture;
 
 //Initialise VBO - do only once, at start of program
 //Create a variable to hold the VBO identifier
@@ -234,7 +242,7 @@ void reshapeCube(int w, int h)
 /*
  * Sphere-drawing
  */
-const int SPHERE_N = 20;
+const int SPHERE_N = 20, radius = 50;
 
 void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfloat ks, GLfloat n)
 {
@@ -256,34 +264,36 @@ void drawSpheres(void){
     glLightfv(GL_LIGHT0, GL_SPECULAR, lightAmbient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightAmbient);
 
-    setGlMaterial(0.0f,0.0f,1.0f,0.2,0.7,0.5,64);
+    /*setGlMaterial(0.0f,0.0f,1.0f,0.2,0.7,0.5,64);*/
     glPushMatrix();
     glTranslated(90,320,100);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    gluSphere(quadric,radius,SPHERE_N,SPHERE_N);
     glPopMatrix();
 
-    setGlMaterial(0.0f,1.0f,0.0f,0.2,0.3,0.5,8);
+    //setGlMaterial(0.0f,1.0f,0.0f,0.2,0.3,0.5,8);
     glPushMatrix();
     glTranslated(210,270,300);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    gluSphere(quadric,radius,SPHERE_N,SPHERE_N);
     glPopMatrix();
 
-    setGlMaterial(1.0f,0.0f,0.0f,0.2,0.7,0.8,32);
+    //setGlMaterial(1.0f,0.0f,0.0f,0.2,0.7,0.8,32);
     glPushMatrix();
     glTranslated(290,170,150);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    gluSphere(quadric,radius,SPHERE_N,SPHERE_N);
     glPopMatrix();
 
-    setGlMaterial(1.0f,0.8f,0.0f,0.2,0.8,0.0,1);
+    //setGlMaterial(1.0f,0.8f,0.0f,0.2,0.8,0.0,1);
     glPushMatrix();
     glTranslated(140,220,400);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    glRotated(90, 1, 0, 0);
+    gluSphere(quadric,radius,SPHERE_N,SPHERE_N);
     glPopMatrix();
 
-    setGlMaterial(1.0f,0.5f,0.0f,0.2,0.8,0.5,32);
+    //setGlMaterial(1.0f,0.5f,0.0f,0.2,0.8,0.5,32);
     glPushMatrix();
     glTranslated(110,130,200);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
+    glRotated(spherePhi, 0, 1, 0);
+    gluSphere(quadric,radius,SPHERE_N,SPHERE_N);
     glPopMatrix();
 }
 
@@ -301,6 +311,11 @@ void displaySphere(void)
     /* Clear all pixels */
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
     glLoadIdentity();
+    
+    glEnable(GL_TEXTURE_2D);
+  	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+  	glBindTexture(GL_TEXTURE_2D,myTexture);
+    glScaled(1,1,-1);
     
     double c = vogelRadius / sqrt(apertureSamples);
         
@@ -325,6 +340,7 @@ void displaySphere(void)
 	}
 
 	glAccum(GL_RETURN, 1);
+	glDisable(GL_TEXTURE_2D);
 
     glutSwapBuffers();
 }
@@ -336,6 +352,16 @@ void reshapeSphere(int w, int h)
     height = h;
     fovy = 2.0*atan2(height/2.0,1000.0)*180.0/M_PI;
     rePerspectifySphere();
+}
+
+void idleSphere(){
+	int curMs = glutGet(GLUT_ELAPSED_TIME),
+		delta = prevMs - curMs;
+	
+	spherePhi += 0.05 * delta;
+	glutPostRedisplay();
+	
+	prevMs = curMs;
 }
 
 /*
@@ -368,6 +394,7 @@ void initSphere(){
 	
 	glutDisplayFunc(displaySphere);
     glutReshapeFunc(reshapeSphere);
+    glutIdleFunc(idleSphere);
 }
 
 void initGoochVars(GLuint shaders){
@@ -380,6 +407,36 @@ void initGoochVars(GLuint shaders){
 	GLint goochLineWidth= glGetUniformLocation(shaders, "OutlineWidth");
 	glUniform1f(goochLineWidth, 0.1);
 }
+
+GLuint initTexture(char* filename) {
+	unsigned char* buffer;
+	unsigned char* image;
+	size_t buffersize, imagesize;
+	GLuint texName;
+	LodePNG_Decoder decoder;
+
+	LodePNG_loadFile(&buffer, &buffersize, filename);
+	LodePNG_Decoder_init(&decoder);
+	decoder.infoRaw.color.colorType = 6; /* Load image as RGBA */
+	LodePNG_decode(&decoder, &image, &imagesize, buffer, buffersize);
+	
+	if(decoder.error) {
+		printf("Error reading in png image: %d\n", decoder.error);
+		exit(1);		
+	} else {
+		glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+		glGenTextures(1,&texName);
+		glBindTexture(GL_TEXTURE_2D,texName);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,decoder.infoPng.width,
+		decoder.infoPng.height,0,GL_RGBA,GL_UNSIGNED_BYTE,image);
+	} 
+	return texName;
+}
+
 
 int main(int argc, char** argv)
 {
@@ -404,14 +461,24 @@ int main(int argc, char** argv)
     fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 #endif
 
+	quadric = gluNewQuadric();
+    gluQuadricDrawStyle(quadric, GLU_FILL);
+    gluQuadricOrientation(quadric, GLU_OUTSIDE);
+    gluQuadricNormals(quadric, GLU_SMOOTH);
+    gluQuadricTexture(quadric, GL_TRUE);
+    
+    glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL,GL_SEPARATE_SPECULAR_COLOR);
+    
+    myTexture = initTexture("earth.png");
+
     /* Select clearing (background) color */
     glClearColor(0.0,0.0,0.0,0.0);
-    glShadeModel(GL_SMOOTH);
+    /*glShadeModel(GL_SMOOTH);*/
     glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-	GLuint shaders = initGLSLProgram("vertexgooch.glsl","fragmentgooch.glsl");
-	initGoochVars(shaders);
+	//GLuint shaders = initGLSLProgram("vertexgooch.glsl","fragmentgooch.glsl");
+	//initGoochVars(shaders);
 
     /* Register GLUT callback functions */
     glutKeyboardFunc(keyboard);

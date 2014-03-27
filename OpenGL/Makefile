@@ -7,7 +7,7 @@ CC = gcc -ggdb -Wall -Wno-format -pedantic -std=gnu99
 UNAME=$(shell uname)
 
 EXECUTABLE = openglframework
-OBJS = openglframework.o glslshaders.o glm.o
+OBJS = openglframework.o glslshaders.o glm.o lodepng.o
 
 ifeq ($(UNAME),Darwin)
 	LIBS = -lm -framework OpenGL -framework GLUT
