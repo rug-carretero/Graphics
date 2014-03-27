@@ -15,20 +15,20 @@ vec3 n = normalize(N);
 vec3 v = normalize(V);
 vec3 h = normalize(l+v);
 
-vec3 surfaceColour;
-surfaceColour[0] = 1.0;
-surfaceColour[1] = 0.0;
-surfaceColour[2] = 0.0;
 
 float diffuse = dot(l,n);
-float specular = pow(dot(n,h),32.0);
+float specular = pow(dot(n,h),gl_FrontMaterial.shininess);
 
-vec3 cool = min(CoolColour+surfaceColour,1.0);
-vec3 warm = min(WarmColour+surfaceColour,1.0);
+vec4 cool = min(vec4(CoolColour,1.0)+(0.2*gl_LightSource[0].diffuse * 
+			gl_FrontMaterial.diffuse ),1.0);
+vec4 warm = min(vec4(WarmColour,1.0)+0.5*gl_LightSource[0].diffuse * 
+			gl_FrontMaterial.diffuse,1.0);
 
-vec3 colour = min(mix(cool,warm,diffuse)+specular,1.0);
+vec4 colour = min(mix(cool,warm,diffuse)+specular * gl_FrontMaterial.specular * gl_LightSource[0].specular,1.0);
 
-if (dot(n,v)<OutlineWidth) colour=vec3(0,0,0);
+ colour = cool *(1 - diffuse)/2 + warm * (1 + diffuse)/2 + specular * gl_FrontMaterial.specular * gl_LightSource[0].specular;
 
-gl_FragColor = vec4(colour,1);
+if (dot(n,v)<OutlineWidth) colour=vec4(0,0,0,1);
+
+gl_FragColor = colour;
 }
