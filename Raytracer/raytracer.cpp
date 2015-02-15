@@ -224,7 +224,8 @@ bool Raytracer::readScene(const std::string& inputFilename)
 				(*camera)["viewSize"][1] >> scene->height;
 			}else{
 				scene->setEye(parseTriple(doc["Eye"]));
-				scene->center = Triple(0, 0, 0);
+				scene->center = Triple(200, 200, 0);
+				//scene->center = Triple(0, 0, 0);
 				scene->up = Vector(0, 1, 0);
 				scene->width = 400;
 				scene->height = 400;
