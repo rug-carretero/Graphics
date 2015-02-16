@@ -111,6 +111,7 @@ Color Scene::phongTrace(const Ray &ray, int level)
 		specular += material->ks * pow(max(0.0, Rm.dot(V)), material->n) * lights[i]->color;
 	}
 	Color col = color * Il + specular;
+	//Color col = color;//disable illumination
 	
 	if(level < reflectRecursion){
 		Vector r = - V + 2 * V.dot(N) * N;
