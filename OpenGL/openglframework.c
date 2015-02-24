@@ -212,9 +212,9 @@ void displayCube(void)
     glRotated(theta * 180.0/M_PI, upX, upY, upZ);
     glRotated(phi * 180.0/M_PI, 1.0, 0.0, 0.0);
 	
-    //drawCube();
+    drawCube();
 
-	glmDraw(obj, GLM_SMOOTH | GLM_COLOR);
+    //glmDraw(obj, GLM_SMOOTH | GLM_COLOR);
 	
 	
 	//VBOcruft();
@@ -379,8 +379,8 @@ void initCube(){
 	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
 	upX = 0.0, upY = 1.0, upZ = 0.0, fovy = 60.0;
 	
-	obj = glmReadOBJ("obj/devilduk.obj");
-	glmScale(obj, 2);
+	obj = glmReadOBJ("obj/cube.obj");
+	//glmScale(obj, 2);
 	glmFacetNormals(obj);
 	glmVertexNormals(obj, 90);
 	
@@ -426,17 +426,22 @@ int main(int argc, char** argv)
     glClearColor(0.0,0.0,0.0,0.0);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	//initGLSLProgram("normalvertex.glsl","normalfragment.glsl");
 
+    /*functions below should be disabled to draw colored cube again*/
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    initGLSLProgram("normalvertex.glsl","normalfragment.glsl");
+    /**/
+    
     /* Register GLUT callback functions */
     glutKeyboardFunc(keyboard);
 	glutSpecialFunc(specialKeyboard);
 	glutMotionFunc(motion);
 	glutMouseFunc(mouse);
-	
+
+	/*choose between cube and spheres*/
 	initSphere();
+	//initCube();
 
     glutMainLoop();
 
