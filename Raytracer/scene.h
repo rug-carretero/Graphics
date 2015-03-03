@@ -28,31 +28,39 @@ class Scene
 private:
     std::vector<Object*> objects;
     std::vector<Light*> lights;
-    Triple eye;
-public:    
-    std::string render_mode;
-    bool shadow_mode;
-    int max_recursion_depth;
-    int super_sampling;
-    Point center, up;
-    int width, height;
-    bool camera;
-    bool findHit(const Ray &ray);
-    Color tracePhongRec(const Ray &ray, int recursionDepth);
-    Color trace(const Ray &ray);
+	
+	Color phongReflect(const Ray &ray, int level, Object * src);
+    void phongRender(Image &img);
+    void normalRender(Image &img);
+    void zRender(Image &img);
+    Color phongTrace(const Ray &ray, int level);
+	Color goochTrace(const Ray &ray);
+	Hit trace(const Ray& ray, Object ** obj);
+	
+    double zmin;
+    double zmax;
+public:
     void render(Image &img);
     void addObject(Object *o);
     void addLight(Light *l);
     void setEye(Triple e);
-    void setRenderMode(std::string render_mode);
-    void setShadowMode(bool shadow_mode);
-    void setMaxRecursionDepth(int max_recursion_depth);
-    void setSuperSampling(int super_sampling);
-    void setCenter(Point center);
-    void setUp(Point up);
-    void setWidthHeight(int width, int height);
     unsigned int getNumObjects() { return objects.size(); }
     unsigned int getNumLights() { return lights.size(); }
+	
+	enum RenderModes {RenderPhong = 1, RenderZBuffer, RenderNormal, RenderGooch} renderMode;
+	bool renderShadows;
+	int superSamples;
+	int reflectRecursion;
+	
+	double alpha;
+	double beta;
+	double goochB;
+	double goochY;
+	
+    Triple eye;
+    Triple center;
+    Vector up;
+    int width, height;
 };
 
 #endif /* end of include guard: SCENE_H_KNBLQLP6 */

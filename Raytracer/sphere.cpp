@@ -15,6 +15,8 @@
 //
 
 #include "sphere.h"
+#include "image.h"
+#include "material.h"
 #include <iostream>
 #include <math.h>
 
@@ -22,39 +24,83 @@
 
 Hit Sphere::intersect(const Ray &ray)
 {
-   Vector distance = ray.O - position;
-	double a = ray.D.dot(ray.D);
-	double b = distance.dot(ray.D) * 2;
-	double c = distance.dot(distance) - (r * r);
+    /****************************************************
+    * RT1.1: INTERSECTION CALCULATION
+    *
+    * Given: ray, position, r
+    * Sought: intersects? if true: *t
+    * 
+    * Insert calculation of ray/sphere intersection here. 
+    *
+    * You have the sphere's center (C) and radius (r) as well as
+    * the ray's origin (ray.O) and direction (ray.D).
+    *
+    * If the ray does not intersect the sphere, return false.
+    * Otherwise, return true and place the distance of the
+    * intersection point from the ray origin in *t (see example).
+    ****************************************************/
+	/*
+		zie ook
+		http://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
+	*/
 
-	double disc = b * b - 4 * a * c;
-	if (disc < 0) 
-	  return Hit::NO_HIT();
-
-
-	disc = sqrt(disc);
-
-	double q;
-	if (b < 0)
-	  q = (-b - disc) * 0.5;
-	else
-	  q = (-b + disc) * 0.5;
-	
-	double t1 = q / a;
-	double t2 = c / q;
-
-	if (t1 > t2) {
-	  double tmp = t1;
-	  t1 = t2;
-	  t2 = tmp;
-	}
-
-	if (t1 < 0) 
-		t1 = t2;
-
+	Vector distance = ray.O - position;
 	Vector direction = ray.D.normalized();
 	
-	Vector N = (ray.O + direction * t1 - position).normalized();
+	double a = direction.dot(direction);
+	double b = 2 * (direction.dot(distance));
+	double c = distance.dot(distance) - r * r;
+	double discriminant = b * b - 4 * a * c;
 	
-	return Hit(t1,N);
+	if(discriminant < 0) return Hit::NO_HIT();
+	
+	double intersect1 = (-b + sqrt(discriminant)) / (2 * a);
+	double intersect2 = (-b - sqrt(discriminant)) / (2 * a);
+	
+	if(intersect1 < 0 && intersect2 < 0){
+		return Hit::NO_HIT();
+	}
+	
+	double t = 0;
+	
+	if(intersect1 > 0 && intersect2 > 0){
+		t = min(intersect1, intersect2);
+	}else{
+		t = max(intersect1, intersect2);
+	}
+	
+	/****************************************************
+	* RT1.2: NORMAL CALCULATION
+	*
+	* Given: t, C, r
+	* Sought: N
+	* 
+	* Insert calculation of the sphere's normal at the intersection point.
+	****************************************************/
+	
+	Vector N = (ray.O + direction * t - position).normalized();
+	// if(distance.length() < r) N *= -1;
+	if(N.dot(-ray.D) < 0) N = -N;
+	
+	//Vector N = (ray.O + direction.normalized() * t - position).normalized();
+	
+	return Hit(t,N);
+}
+
+Color Sphere::mapTexture(const Point in){
+	Image * texture = material->texture;
+	
+	if(!texture) return material->color;
+
+	//with variable angle, but distorted
+	Vector vn = Vector(0, 1, 0);//.rotate(angle, axis);
+	Vector ve = Vector(1, 0, 0);//.rotate(angle, axis);
+	Vector vp = (in - position).normalized();
+
+	//working, but with no variable angle
+	Vector d = (position - in).normalized().rotate(angle, axis);	
+	double u = 0.5 + atan2(d.z,d.x) / (2.0 * M_PI);
+	double v = 0.5 - asin(d.y) / M_PI;
+	
+	return texture->colorAt(u, v);
 }

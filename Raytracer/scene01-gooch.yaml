@@ -12,17 +12,27 @@
 #  The example scene description should largely speak for itself. By now
 #  it should be clear that the #-character can be used to insert comments.
 
-Eye: [200,200,0]  
-
-Shadows: true
+RenderMode: "gooch"
+GoochParameters:
+  b: 0.55
+  y: 0.3
+  alpha: 0.25
+  beta: 0.5
+  
+Shadows: 1
+MaxRecursionDepth: 2
 SuperSampling:
-  factor: 1
+  factor: 4
+
+Camera:
+    eye: [200,200,1000]
+    center: [200,200,0]
+    up: [0,1,0]
+    viewSize: [400,400]
 
 Lights:
-- position: [-200,600,1500]
-  color: [0.4,0.4,0.8]
-- position: [600,600,1500]
-  color: [0.8,0.8,0.4]
+- position: [-1000,600,400]
+  color: [1.0,1.0,1.0]
 
 Objects:
 - type: sphere
@@ -59,13 +69,15 @@ Objects:
     color: [1.0,0.8,0.0]
     ka: 0.2
     kd: 0.8
-    ks: 0
+    ks: 0.0
     n: 1
 - type: sphere
   position: [110,130,200]
   radius: 50
+  angle: 0
+  axis: [0, 0, 0]
   material: # orange
-    color: [1.0,0.5,0.0]
+    texture: bluegrid.png
     ka: 0.2
     kd: 0.8
     ks: 0.5
@@ -79,3 +91,14 @@ Objects:
     kd: 0.8
     ks: 0
     n: 1
+
+- type: triangle
+  v0: [200,160,200]
+  v1: [140,600,200]
+  v2: [400,120,150]
+  material: # white
+    color: [1.0, 1.0, 1.0]
+    ka: 0.5
+    kd: 0.7
+    ks: 0.1
+    n: 64

@@ -12,11 +12,18 @@
 #  The example scene description should largely speak for itself. By now
 #  it should be clear that the #-character can be used to insert comments.
 
-Eye: [200,200,0]  
 
+Camera:
+    eye: [200,200,800]
+    center: [200,200,0]
+    up: [0,1,0]
+    viewSize: [800,800]
+
+RenderMode: phong
 Shadows: true
+MaxRecursionDepth: 2
 SuperSampling:
-  factor: 1
+  factor: 4
 
 Lights:
 - position: [-200,600,1500]
@@ -55,8 +62,10 @@ Objects:
 - type: sphere
   position: [140,220,400]
   radius: 50
-  material: # yellow
-    color: [1.0,0.8,0.0]
+  angle: 45
+  axis: [5,4,3]
+  material:
+    texture: bluegrid.png
     ka: 0.2
     kd: 0.8
     ks: 0
@@ -73,8 +82,10 @@ Objects:
 - type: sphere
   position: [200,200,-1000]
   radius: 1000
+  angle: 45
+  axis: [0,0,1]
   material: # grey
-    color: [0.4,0.4,0.4]
+    texture: earth.png
     ka: 0.2
     kd: 0.8
     ks: 0

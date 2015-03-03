@@ -15,6 +15,10 @@
 #include "raytracer.h"
 #include "object.h"
 #include "sphere.h"
+#include "plane.h"
+#include "triangle.h"
+#include "mesh.h"
+#include "quad.h"
 #include "material.h"
 #include "light.h"
 #include "image.h"
@@ -47,11 +51,24 @@ Triple parseTriple(const YAML::Node& node)
 Material* Raytracer::parseMaterial(const YAML::Node& node)
 {
     Material *m = new Material();
-    node["color"] >> m->color;	
+    
+    if(const YAML::Node * texnode = node.FindValue("texture")){
+		std::string file;
+		*texnode >> file;
+		
+		m->loadTexture(file);
+		
+		cout << "Texture: " << m->texture->width() << "x" << m->texture->height() << endl;
+	}else{
+		node["color"] >> m->color;	
+		m->texture = NULL;
+	}
+	
     node["ka"] >> m->ka;
     node["kd"] >> m->kd;
     node["ks"] >> m->ks;
     node["n"] >> m->n;
+    
     return m;
 }
 
@@ -62,18 +79,65 @@ Object* Raytracer::parseObject(const YAML::Node& node)
     node["type"] >> objectType;
 
     if (objectType == "sphere") {
-        Point pos;
-        node["position"] >> pos;
-        double r;
-        node["radius"] >> r;
-        Sphere *sphere = new Sphere(pos,r);		
-        returnObject = sphere;
+      Point pos;
+      node["position"] >> pos;
+      double r;
+      node["radius"] >> r;
+	  double phi = 0.0;
+	  if(const YAML::Node * phn = node.FindValue("angle")){
+		*phn >> phi;
+	  }
+	  Vector axis = Vector(0, 0, 0);
+	  if(const YAML::Node * axn = node.FindValue("axis")){
+		*axn >> axis;
+	  }
+      Sphere *sphere = new Sphere(pos, r, phi, axis);
+      returnObject = sphere;
     }
+    
+    if(objectType == "plane"){
+      Point center;
+      node["center"] >> center;
+      Vector normal;
+      node["normal"] >> normal;
+      Plane * plane = new Plane(center, normal);
+      returnObject = plane;
+    }
+	
+    if(objectType == "triangle"){
+      Point v0, v1, v2;
+      node["v0"] >> v0;
+      node["v1"] >> v1;
+      node["v2"] >> v2;
+      Triangle * triangle = new Triangle(v0, v1, v2);
+      returnObject = triangle;
+    }
+    /*complete different type of object reading*/
+    if(objectType == "mesh"){
+      std::string filename;
+	  float scale;
+      node["filename"] >> filename;
+	  node["scale"] >> scale;
+      Mesh * meshobject = new Mesh(filename, scale);
+      returnObject = meshobject;
+    }
+	
+	if(objectType == "quad"){
+		Point center;
+		node["center"] >> center;
+		Vector normal;
+		node["normal"] >> normal;
+		int radius;
+		node["radius"] >> radius;
+		Quad * quad = new Quad(center, normal, radius);
+		returnObject = quad;
+	}
 
     if (returnObject) {
         // read the material and attach to object
         returnObject->material = parseMaterial(node["material"]);
     }
+
 
     return returnObject;
 }
@@ -87,8 +151,23 @@ Light* Raytracer::parseLight(const YAML::Node& node)
     return new Light(position,color);
 }
 
-int Raytracer::parseSuperSampling(const YAML::Node& node) {
-    return node["factor"];
+enum Scene::RenderModes parseRenderMode(const YAML::Node& node){
+	if(node == "zbuffer") return Scene::RenderZBuffer;
+	if(node == "normal") return Scene::RenderNormal;
+	if(node == "gooch") return Scene::RenderGooch;
+	return Scene::RenderPhong;
+}
+
+bool parseBool(const YAML::Node& node){
+	string val;
+	node >> val;
+	
+	for(size_t i = 0; i < val.length(); i++){
+		val[i] = tolower(val[i]);
+	}
+	
+	if(val == "true" || val == "yes" || val == "1") return true;
+	return false;
 }
 
 /*
@@ -111,29 +190,53 @@ bool Raytracer::readScene(const std::string& inputFilename)
         if (parser) {
             YAML::Node doc;
             parser.GetNextDocument(doc);
-
+			
+			scene->renderMode = Scene::RenderPhong;
             // Read scene configuration options
-            if (doc.FindValue("RenderMode") != 0)
-                scene->setRenderMode(doc["RenderMode"]);
-            else
-                scene->setRenderMode("phong");
-            
-            if (doc.FindValue("Shadows") != 0)
-                scene->setShadowMode(doc["Shadows"]);
-            else
-                scene->setShadowMode(false);
-            
-            if (doc.FindValue("MaxRecursionDepth") != 0) 
-                scene->setMaxRecursionDepth(doc["MaxRecursionDepth"]);
-            else
-                scene->setMaxRecursionDepth(0);
-            
-            if (doc.FindValue("SuperSampling") != 0)
-                scene->setSuperSampling(parseSuperSampling(doc["SuperSampling"]));
-            else
-                scene->setSuperSampling(1);
-
-            scene->setEye(parseTriple(doc["Eye"]));
+			if(const YAML::Node * rMode = doc.FindValue("RenderMode")){
+				scene->renderMode = parseRenderMode(*rMode);
+				if(scene->renderMode == Scene::RenderGooch){
+					const YAML::Node& goochparms = doc["GoochParameters"];
+					goochparms["alpha"] >> scene->alpha;
+					goochparms["beta"] >> scene->beta;
+					goochparms["b"] >> scene->goochB;
+					goochparms["y"] >> scene->goochY;
+				}
+			}
+			if(const YAML::Node * rShadows = doc.FindValue("Shadows")){
+				scene->renderShadows = parseBool(*rShadows);
+				cout << "Shadows ";
+			}
+			const YAML::Node * ssing = doc.FindValue("SuperSampling");
+            if(ssing) {
+				cout << "Super-sampling: ";
+                (*ssing)["factor"] >> scene->superSamples;
+				cout << scene->superSamples << endl;
+            }else{
+				scene->superSamples = 1;
+			}
+			
+			const YAML::Node * camera = doc.FindValue("Camera");
+			if(camera){
+				(*camera)["eye"] >> scene->eye;
+				(*camera)["center"] >> scene->center;
+				(*camera)["up"] >> scene->up;
+				(*camera)["viewSize"][0] >> scene->width;
+				(*camera)["viewSize"][1] >> scene->height;
+			}else{
+				scene->setEye(parseTriple(doc["Eye"]));
+				scene->center = Triple(200, 200, 0);
+				scene->up = Vector(0, 1, 0);
+				scene->width = 400;
+				scene->height = 400;
+			}
+			
+			const YAML::Node * refRec = doc.FindValue("MaxRecursionDepth");
+			if(refRec){
+				*refRec >> scene->reflectRecursion;
+			}else{
+				scene->reflectRecursion = 0;
+			}
 
             // Read and parse the scene objects
             const YAML::Node& sceneObjects = doc["Objects"];
@@ -175,9 +278,22 @@ bool Raytracer::readScene(const std::string& inputFilename)
 
 void Raytracer::renderToFile(const std::string& outputFilename)
 {
-    Image img(400,400);
+    Image img(scene->width,scene->height);
     cout << "Tracing..." << endl;
+	cout << "Render mode: ";// << scene->renderMode;
+	switch(scene->renderMode){
+		case Scene::RenderPhong: cout << "phong"; break;
+		case Scene::RenderZBuffer: cout << "zbuffer"; break;
+		case Scene::RenderNormal: cout << "normal"; break;
+		case Scene::RenderGooch: cout << "gooch"; break;
+	}
+	cout << endl;
+	cout << "Reflection recursion: " << scene->reflectRecursion << endl;
+	cout << "Shadows: " << scene->renderShadows << endl;
+	
+	
     scene->render(img);
+    
     cout << "Writing image to " << outputFilename << "..." << endl;
     img.write_png(outputFilename.c_str());
     cout << "Done." << endl;

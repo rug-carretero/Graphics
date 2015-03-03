@@ -121,6 +121,14 @@ public:
         z *= f;
         return *this;
     }
+	
+	Triple& operator*=(const Triple &t)
+	{
+		x *= t.x;
+		y *= t.y;
+		z *= t.z;
+		return *this;
+	}
 
     Triple& operator/=(const double f)
     {
@@ -201,6 +209,24 @@ public:
         if (b > maxValue) b = maxValue;
     }
 
+    Triple rotate(double phi, Triple axis){
+      Triple r1,r2,r3;
+      axis.normalize();
+
+      phi = phi / 180 * M_PI;
+
+      double infphi = 1.0 - cos(phi);
+
+      r1 = Triple(cos(phi) + axis.x*axis.x * infphi, axis.x*axis.y*infphi - axis.z*sin(phi), axis.x*axis.z*infphi+axis.y*sin(phi));
+
+      r2 = Triple(axis.y*axis.x*infphi + axis.z*sin(phi), cos(phi) + axis.y*axis.y*infphi, axis.y*axis.z*infphi-axis.x*sin(phi));
+
+      r3 = Triple(axis.z * axis.x * infphi - axis.y * sin(phi), axis.z * axis.y * infphi + axis.x * sin(phi), cos(phi) + axis.z * axis.z * infphi);
+
+      return Triple(dot(r1), dot(r2), dot(r3));
+
+    }
+
     union {
         double data[3];
         struct {
@@ -214,6 +240,7 @@ public:
             double b;
         };
     };
+
 };
 
 typedef Triple Color;

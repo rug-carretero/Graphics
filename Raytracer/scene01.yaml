@@ -11,17 +11,35 @@
 #
 #  The example scene description should largely speak for itself. By now
 #  it should be clear that the #-character can be used to insert comments.
-Rendermode: zbuffer
 
-Shadow: True
+Eye: [200,200,1000]
 
-Eye: [200,200,1000]  
+RenderMode: phong
 
 Lights:
 - position: [-200,600,1500]
   color: [1.0,1.0,1.0]
 
 Objects:
+- type: triangle
+  v0: [100,120,900]
+  v1: [140,600,900]
+  v2: [400,120,900]
+  material: # white
+    color: [1.0, 1.0, 1.0]
+    ka: 0.5
+    kd: 0.7
+    ks: 0.1
+    n: 64
+#- type: plane
+#  center: [140, 220, 400]
+#  normal: [1.0, 1.0, 1.0]
+#  material: # white
+#    color: [1.0, 1.0, 1.0]
+#    ka: 0.5
+#    kd: 0.7
+#    ks: 0.1
+#    n: 64
 - type: sphere
   position: [90,320,100]
   radius: 50

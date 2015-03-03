@@ -12,19 +12,32 @@
 #  The example scene description should largely speak for itself. By now
 #  it should be clear that the #-character can be used to insert comments.
 
-Eye: [200,200,0]  
+Camera:
+    eye: [200,200,800]
+    center: [0,200,0]
+    up: [0,1,0]
+    viewSize: [400,400]
 
+RenderMode: phong
+MaxRecursionDepth: 2
 Shadows: true
 SuperSampling:
-  factor: 1
+  factor: 4
 
 Lights:
 - position: [-200,600,1500]
-  color: [0.4,0.4,0.8]
-- position: [600,600,1500]
-  color: [0.8,0.8,0.4]
+  color: [1.0,1.0,1.0]
 
 Objects:
+- type: mesh
+  filename: "../OpenGL/obj/devilduk.obj"
+  scale: 600
+  material: # blue
+    color: [0.0,0.0,1.0]
+    ka: 0.2
+    kd: 0.7
+    ks: 0.5
+    n: 64
 - type: sphere
   position: [90,320,100]
   radius: 50
@@ -55,8 +68,10 @@ Objects:
 - type: sphere
   position: [140,220,400]
   radius: 50
-  material: # yellow
-    color: [1.0,0.8,0.0]
+  angle: 45
+  axis: [0,0,1]
+  material:
+    texture: bluegrid.png
     ka: 0.2
     kd: 0.8
     ks: 0

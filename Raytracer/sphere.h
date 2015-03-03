@@ -18,16 +18,19 @@
 #define SPHERE_H_115209AE
 
 #include "object.h"
+// #include "hit.h"
 
 class Sphere : public Object
 {
 public:
-    Sphere(Point position,double r) : position(position), r(r) { }
+ Sphere(Point position,double r, double angle, Vector axis) : position(position), r(r), angle(angle), axis(axis) { }
 
     virtual Hit intersect(const Ray &ray);
+    virtual Color mapTexture(const Point in);
 
     const Point position;
-    const double r;
+    const double r, angle;
+    const Vector axis;
 };
 
 #endif /* end of include guard: SPHERE_H_115209AE */

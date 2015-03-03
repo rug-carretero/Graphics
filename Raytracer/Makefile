@@ -7,7 +7,7 @@
 ### MACROS
 
 # GNU (everywhere)
-CPP = g++ -g -Wall
+CPP = g++ -g -Wall -O5
 
 # GNU (faster)
 #CPP = g++ -O5 -Wall -fomit-frame-pointer -ffast-math 
@@ -17,7 +17,7 @@ LIBS = -lm
 EXECUTABLE = ray
 
 OBJS = main.o raytracer.o sphere.o light.o material.o \
-	image.o triple.o lodepng.o scene.o
+	image.o triple.o lodepng.o scene.o plane.o triangle.o mesh.o quad.o
 
 YAMLOBJS = $(subst .cpp,.o,$(wildcard yaml/*.cpp))
 
@@ -26,8 +26,8 @@ IMAGES = $(subst .yaml,.png,$(wildcard *.yaml))
 
 ### TARGETS
 
-$(EXECUTABLE): $(OBJS) $(YAMLOBJS)
-	$(CPP) $(OBJS) $(YAMLOBJS) $(LIBS) -o $@
+$(EXECUTABLE): $(OBJS) glm.o $(YAMLOBJS)
+	$(CPP) $(OBJS) glm.o $(YAMLOBJS) $(LIBS) -o $@
 
 run: $(IMAGES)
 
@@ -37,10 +37,13 @@ run: $(IMAGES)
 depend: make.dep
 
 clean:
-	- /bin/rm -f  *.bak *~ $(OBJS) $(YAMLOBJS) $(EXECUTABLE) $(EXECUTABLE).exe
+	- /bin/rm -f  *.bak *~ $(OBJS) glm.o $(YAMLOBJS) $(EXECUTABLE) $(EXECUTABLE).exe
 
 make.dep:
 	gcc -MM $(OBJS:.o=.cpp) > make.dep
+
+glm.o: glm.c glm.h
+	gcc -c glm.c
 
 ### RULES
 
