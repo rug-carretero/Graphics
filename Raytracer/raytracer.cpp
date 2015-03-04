@@ -17,7 +17,6 @@
 #include "sphere.h"
 #include "plane.h"
 #include "triangle.h"
-#include "mesh.h"
 #include "quad.h"
 #include "material.h"
 #include "light.h"
@@ -52,17 +51,7 @@ Material* Raytracer::parseMaterial(const YAML::Node& node)
 {
     Material *m = new Material();
     
-    if(const YAML::Node * texnode = node.FindValue("texture")){
-		std::string file;
-		*texnode >> file;
-		
-		m->loadTexture(file);
-		
-		cout << "Texture: " << m->texture->width() << "x" << m->texture->height() << endl;
-	}else{
-		node["color"] >> m->color;	
-		m->texture = NULL;
-	}
+ 		node["color"] >> m->color;	
 	
     node["ka"] >> m->ka;
     node["kd"] >> m->kd;
@@ -112,16 +101,7 @@ Object* Raytracer::parseObject(const YAML::Node& node)
       Triangle * triangle = new Triangle(v0, v1, v2);
       returnObject = triangle;
     }
-    /*complete different type of object reading*/
-    if(objectType == "mesh"){
-      std::string filename;
-	  float scale;
-      node["filename"] >> filename;
-	  node["scale"] >> scale;
-      Mesh * meshobject = new Mesh(filename, scale);
-      returnObject = meshobject;
-    }
-	
+   	
 	if(objectType == "quad"){
 		Point center;
 		node["center"] >> center;
@@ -154,7 +134,6 @@ Light* Raytracer::parseLight(const YAML::Node& node)
 enum Scene::RenderModes parseRenderMode(const YAML::Node& node){
 	if(node == "zbuffer") return Scene::RenderZBuffer;
 	if(node == "normal") return Scene::RenderNormal;
-	if(node == "gooch") return Scene::RenderGooch;
 	return Scene::RenderPhong;
 }
 

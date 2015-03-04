@@ -17,7 +17,6 @@
 
 #include <iostream>
 #include "triple.h"
-#include "image.h"
 
 class Material
 {
@@ -28,11 +27,7 @@ public:
     double ks;          // specular intensity 
     double n;           // exponent for specular highlight size
     
-    Image * texture;
-    
-    void loadTexture(std::string file);
-
-    Material() { texture = NULL; }
+    Material() {  }
 };
 
 #endif /* end of include guard: MATERIAL_H_TWMNT2EJ */
