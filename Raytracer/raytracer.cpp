@@ -174,13 +174,6 @@ bool Raytracer::readScene(const std::string& inputFilename)
             // Read scene configuration options
 			if(const YAML::Node * rMode = doc.FindValue("RenderMode")){
 				scene->renderMode = parseRenderMode(*rMode);
-				if(scene->renderMode == Scene::RenderGooch){
-					const YAML::Node& goochparms = doc["GoochParameters"];
-					goochparms["alpha"] >> scene->alpha;
-					goochparms["beta"] >> scene->beta;
-					goochparms["b"] >> scene->goochB;
-					goochparms["y"] >> scene->goochY;
-				}
 			}
 			if(const YAML::Node * rShadows = doc.FindValue("Shadows")){
 				scene->renderShadows = parseBool(*rShadows);
@@ -264,7 +257,6 @@ void Raytracer::renderToFile(const std::string& outputFilename)
 		case Scene::RenderPhong: cout << "phong"; break;
 		case Scene::RenderZBuffer: cout << "zbuffer"; break;
 		case Scene::RenderNormal: cout << "normal"; break;
-		case Scene::RenderGooch: cout << "gooch"; break;
 	}
 	cout << endl;
 	cout << "Reflection recursion: " << scene->reflectRecursion << endl;

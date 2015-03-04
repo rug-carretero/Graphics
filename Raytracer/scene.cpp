@@ -80,7 +80,7 @@ Color Scene::phongTrace(const Ray &ray, int level)
 
   //see also http://en.wikipedia.org/wiki/Phong_reflection_model
 
-  Color color = obj->mapTexture(hit);
+  Color color = material->color;
 
   Color Il = Color(0,0,0);
 
