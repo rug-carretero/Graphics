@@ -29,6 +29,3 @@ Hit Quad::intersect(const Ray& ray){
 	return Hit(t, N);
 }
 
-Color Quad::mapTexture(const Point in){
-	return material->color;
-}
