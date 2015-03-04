@@ -5,7 +5,6 @@
 *.o
 */*.o
 
-
 openglframework
 ray
 make.dep
