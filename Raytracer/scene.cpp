@@ -172,8 +172,7 @@ void Scene::phongRender(Image &img)
 	    dist = dist < 0 ? 0 : 1.0 - ((dist - zmin) / (zmax - zmin));
 	    cccol = Color(dist,dist,dist);
 	    break;
-	  case RenderGooch: cccol = goochTrace(ray); break;
-	  }
+	   }
 	  col += cccol / (double)superSamples;
 	}
       }

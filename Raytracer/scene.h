@@ -34,7 +34,6 @@ private:
     void normalRender(Image &img);
     void zRender(Image &img);
     Color phongTrace(const Ray &ray, int level);
-	Color goochTrace(const Ray &ray);
 	Hit trace(const Ray& ray, Object ** obj);
 	
     double zmin;
@@ -47,15 +46,11 @@ public:
     unsigned int getNumObjects() { return objects.size(); }
     unsigned int getNumLights() { return lights.size(); }
 	
-	enum RenderModes {RenderPhong = 1, RenderZBuffer, RenderNormal, RenderGooch} renderMode;
+	enum RenderModes {RenderPhong = 1, RenderZBuffer, RenderNormal} renderMode;
 	bool renderShadows;
 	int superSamples;
 	int reflectRecursion;
 	
-	double alpha;
-	double beta;
-	double goochB;
-	double goochY;
 	
     Triple eye;
     Triple center;

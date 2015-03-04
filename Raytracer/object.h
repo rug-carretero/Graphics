@@ -25,7 +25,6 @@ class Material;
 
 class Object {
 public:
-    Material *material;
 
     virtual ~Object() { }
 

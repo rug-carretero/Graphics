@@ -27,7 +27,6 @@ private:
     Scene *scene;
 
     // Couple of private functions for parsing YAML nodes
-    Material* parseMaterial(const YAML::Node& node);
     Object* parseObject(const YAML::Node& node);
     Light* parseLight(const YAML::Node& node);
 
