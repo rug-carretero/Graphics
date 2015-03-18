@@ -17,7 +17,8 @@
 #include "sphere.h"
 #include "plane.h"
 #include "triangle.h"
-#include "quad.h"
+#include "mesh.h"
+#include "bplane.h"
 #include "material.h"
 #include "light.h"
 #include "image.h"
@@ -51,7 +52,17 @@ Material* Raytracer::parseMaterial(const YAML::Node& node)
 {
     Material *m = new Material();
     
- 		node["color"] >> m->color;	
+    if(const YAML::Node * texnode = node.FindValue("texture")){
+		std::string file;
+		*texnode >> file;
+		
+		m->loadTexture(file);
+		
+		cout << "Texture: " << m->texture->width() << "x" << m->texture->height() << endl;
+	}else{
+		node["color"] >> m->color;	
+		m->texture = NULL;
+	}
 	
     node["ka"] >> m->ka;
     node["kd"] >> m->kd;
@@ -101,16 +112,29 @@ Object* Raytracer::parseObject(const YAML::Node& node)
       Triangle * triangle = new Triangle(v0, v1, v2);
       returnObject = triangle;
     }
-   	
-	if(objectType == "quad"){
-		Point center;
+
+    /*complete different type of object reading*/
+    if(objectType == "mesh"){
+      std::string filename;
+	  float scale;
+      node["filename"] >> filename;
+	  node["scale"] >> scale;
+      Mesh * meshobject = new Mesh(filename, scale);
+      returnObject = meshobject;
+    }
+	
+	if(objectType == "bplane"){
+	  string type;
+	  node["typ"] >> type;
+
+	  Point center;
 		node["center"] >> center;
 		Vector normal;
 		node["normal"] >> normal;
 		int radius;
 		node["radius"] >> radius;
-		Quad * quad = new Quad(center, normal, radius);
-		returnObject = quad;
+		BPlane * bplane = new BPlane(center, normal, radius, type);
+		returnObject = bplane;
 	}
 
     if (returnObject) {
@@ -134,6 +158,7 @@ Light* Raytracer::parseLight(const YAML::Node& node)
 enum Scene::RenderModes parseRenderMode(const YAML::Node& node){
 	if(node == "zbuffer") return Scene::RenderZBuffer;
 	if(node == "normal") return Scene::RenderNormal;
+	if(node == "gooch") return Scene::RenderGooch;
 	return Scene::RenderPhong;
 }
 
@@ -174,10 +199,16 @@ bool Raytracer::readScene(const std::string& inputFilename)
             // Read scene configuration options
 			if(const YAML::Node * rMode = doc.FindValue("RenderMode")){
 				scene->renderMode = parseRenderMode(*rMode);
+				if(scene->renderMode == Scene::RenderGooch){
+					const YAML::Node& goochparms = doc["GoochParameters"];
+					goochparms["alpha"] >> scene->alpha;
+					goochparms["beta"] >> scene->beta;
+					goochparms["b"] >> scene->goochB;
+					goochparms["y"] >> scene->goochY;
+				}
 			}
 			if(const YAML::Node * rShadows = doc.FindValue("Shadows")){
 				scene->renderShadows = parseBool(*rShadows);
-				cout << "Shadows ";
 			}
 			const YAML::Node * ssing = doc.FindValue("SuperSampling");
             if(ssing) {
@@ -197,7 +228,7 @@ bool Raytracer::readScene(const std::string& inputFilename)
 				(*camera)["viewSize"][1] >> scene->height;
 			}else{
 				scene->setEye(parseTriple(doc["Eye"]));
-				scene->center = Triple(200, 200, 0);
+				scene->center = Triple(0, 0, 0);
 				scene->up = Vector(0, 1, 0);
 				scene->width = 400;
 				scene->height = 400;
@@ -257,11 +288,10 @@ void Raytracer::renderToFile(const std::string& outputFilename)
 		case Scene::RenderPhong: cout << "phong"; break;
 		case Scene::RenderZBuffer: cout << "zbuffer"; break;
 		case Scene::RenderNormal: cout << "normal"; break;
+		case Scene::RenderGooch: cout << "gooch"; break;
 	}
 	cout << endl;
 	cout << "Reflection recursion: " << scene->reflectRecursion << endl;
-	cout << "Shadows: " << scene->renderShadows << endl;
-	
 	
     scene->render(img);
     

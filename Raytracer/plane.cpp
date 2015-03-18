@@ -25,3 +25,6 @@ Hit Plane::intersect(const Ray& ray){
 	return Hit(t, N);
 }
 
+Color Plane::mapTexture(const Point in){
+	return material->color;
+}

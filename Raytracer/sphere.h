@@ -26,7 +26,8 @@ public:
  Sphere(Point position,double r, double angle, Vector axis) : position(position), r(r), angle(angle), axis(axis) { }
 
     virtual Hit intersect(const Ray &ray);
-    
+    virtual Color mapTexture(const Point in);
+
     const Point position;
     const double r, angle;
     const Vector axis;

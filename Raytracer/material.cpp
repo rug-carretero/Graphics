@@ -15,3 +15,6 @@
 #include "material.h"
 #include "image.h"
 
+void Material::loadTexture(std::string file){
+	texture = new Image(file.c_str());
+}
