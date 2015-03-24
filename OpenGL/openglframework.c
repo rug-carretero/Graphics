@@ -60,6 +60,8 @@ GLMmodel * obj;
 
 //Initialise VBO - do only once, at start of program
 //Create a variable to hold the VBO identifier
+
+/*void VBOcruft();*/
 /*
  * Rotation-helpers
  */
@@ -197,33 +199,6 @@ void drawCube(void){
 	// deactivate vertex arrays after drawing
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
-
-void displayObj(void){
-
- const static GLfloat lightPos[] = {-200.0, 600.0, 1500.0, 1.0};
-    const static GLfloat lightAmbient[] = {1.0, 1.0, 1.0, 1.0};
-    
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, lightAmbient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightAmbient);
-  
-  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-  glLoadIdentity();
-
-  //gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
-    gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-
-    glRotated(theta * 180.0/M_PI, upX, upY, upZ);
-    glRotated(phi * 180.0/M_PI, 1.0, 0.0, 0.0);
-	
-    //drawCube();
-
-    glmDraw(obj, GLM_SMOOTH | GLM_TEXTURE);
-
-    glutSwapBuffers();
-  
-}
  
 void displayCube(void)
 {
@@ -237,9 +212,12 @@ void displayCube(void)
     glRotated(theta * 180.0/M_PI, upX, upY, upZ);
     glRotated(phi * 180.0/M_PI, 1.0, 0.0, 0.0);
 	
-    drawCube();
+    //drawCube();
 
-    //glmDraw(obj, GLM_SMOOTH | GLM_COLOR);
+	glmDraw(obj, GLM_SMOOTH | GLM_COLOR);
+	
+	
+	//VBOcruft();
 
     glutSwapBuffers();
 }
@@ -360,6 +338,8 @@ void reshapeSphere(int w, int h)
     rePerspectifySphere();
 }
 
+
+
 /*
  * Initializations
  */
@@ -368,22 +348,12 @@ void initCube(){
 	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
 	upX = 0.0, upY = 1.0, upZ = 0.0, fovy = 60.0;
 	
-	glutDisplayFunc(displayCube);
-    glutReshapeFunc(reshapeCube);
-}
-
-void initObj(){
-	eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
-	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
-	upX = 0.0, upY = 1.0, upZ = 0.0, fovy = 60.0;
-	
 	obj = glmReadOBJ("obj/devilduk.obj");
-	glmUnitize(obj);
 	glmScale(obj, 2);
 	glmFacetNormals(obj);
 	glmVertexNormals(obj, 90);
 	
-	glutDisplayFunc(displayObj);
+	glutDisplayFunc(displayCube);
     glutReshapeFunc(reshapeCube);
 }
 
@@ -425,9 +395,9 @@ int main(int argc, char** argv)
     glClearColor(0.0,0.0,0.0,0.0);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-	initGLSLProgram("normalvertex.glsl","normalfragment.glsl");
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	initGLSLProgram("vertexshader.glsl","goochfragment.glsl");
 
     /* Register GLUT callback functions */
     glutKeyboardFunc(keyboard);
@@ -435,7 +405,7 @@ int main(int argc, char** argv)
 	glutMotionFunc(motion);
 	glutMouseFunc(mouse);
 	
-	initObj();
+	initSphere();
 
     glutMainLoop();
 
