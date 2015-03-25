@@ -1,10 +1,7 @@
 /*
-*
 * An OpenGL template/framework file for the Computer Graphics course
 * at the University of Groningen.
-*
 */
-
 
 // If windows is used, windows.h should be included (before gl.h and glu.h)
 #if defined(_WIN32)
@@ -32,209 +29,40 @@
 #include <GL/glut.h>
 #endif
 
-#define M_PI 3.141592653
-#define GOLDEN_RATIO (.5 * (1 + sqrt(5.0)))
-#define GOLDEN_ANGLE (2 * M_PI / (GOLDEN_RATIO * GOLDEN_RATIO))
-
-
 #include <stdlib.h>
 #include <stdio.h>
-
 #include <math.h>
-
-#include "glm.h"
+#include "lodepng.h"
 #include "glslshaders.h"
+#include "glm.h"
 
 
- 
-double eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
-	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
-	upX = 0.0, upY = 1.0, upZ = 0.0,
-	
-	phi = 0.0, theta = 0.0, dist = 5.0,
-	fovy = 60.0, vogelRadius = 10.0;
-	
-int mouseX = 0, mouseY = 0, width, height, apertureSamples = 8;
+#define SPHERE_N (20)
 
-GLMmodel * obj;
+int apertureSamples = 8;
+int downwards = 1, leftwards = 1, forwards = 1;
+int mouse_left_down = 0;
+int mouse_right_down = 0;
+float mouse_x = 0;
+float mouse_y = 0;
+float camera_angle_y = 0.0f;
+float camera_angle_x = 0.0f;
+float camera_distance = 10.0f;
+GLfloat xRotated = 0, yRotated = 0 , zRotated = 0;
+GLint xOrbit = 210, yOrbit = 320, zOrbit = 150;
 
-//Initialise VBO - do only once, at start of program
-//Create a variable to hold the VBO identifier
+GLUquadric* quadric;
+GLuint myTexture;
 
-/*void VBOcruft();*/
-/*
- * Rotation-helpers
- */
-void incPhi(double delta){
-	phi += delta;
-	phi = fmod(phi, 2.0*M_PI);
-}
-void incTheta(double delta){
-	theta += delta;
-	theta = fmod(theta, 2.0*M_PI);
-}
-
-/*
- * Input handling
- */
-
-void mouse(int button, int state, int x, int y){
-	if(state == GLUT_DOWN){
-		mouseX = x;
-		mouseY = y;
-	}
-}
-
-void motion(int x, int y){
-	int deltaX = x - mouseX,
-		deltaY = y - mouseY;
-	
-	if(glutGetModifiers() == GLUT_ACTIVE_CTRL){
-		centerX -= deltaX;
-		eyeX -= deltaX;
-		
-		centerY += deltaY;
-		eyeY += deltaY;
-	}else if(glutGetModifiers() == GLUT_ACTIVE_SHIFT){
-		fovy += deltaY;
-	}else{
-		incTheta((double)deltaX/200.0);
-		incPhi((double)deltaY/200.0);
-	}
-	
-	mouseX = x;
-	mouseY = y;
-	
-	glutPostRedisplay();
-}
-
-void keyboard(unsigned char key, int x, int y)
-{
-	switch (key) {
-        case 'q':
-        case 'Q':
-        case 27: // ESC key
-            printf("Exiting...\n");
-            exit(0);
-        break;
-			
-		case 'a':
-			eyeX -= 10.0;
-			centerX -= 10.0;
-		break;
-		case 'd':
-			eyeX += 10.0;
-			centerX += 10.0;
-		break;
-		case 'w':
-			eyeZ -= 10.0;
-		break;
-		case 's':
-			eyeZ += 10.0;
-		break;
-    }
-	glutPostRedisplay();
-}
-
-void specialKeyboard(int key, int x, int y){
-	switch(key){
-		case GLUT_KEY_UP:
-			incPhi(-0.05);
-		break;
-		case GLUT_KEY_DOWN:
-			incPhi(0.05);
-		break;
-		case GLUT_KEY_LEFT:
-			incTheta(-0.05);
-		break;
-		case GLUT_KEY_RIGHT:
-			incTheta(0.05);
-		break;
-	}
-	glutPostRedisplay();
-}
-
-/*
- * Cube-drawing
- */
-void drawCube(void){
-	static const GLfloat cubeVertices[8*3] = {
-		-1,-1,-1,
-		-1,-1, 1,
-		-1, 1,-1,
-		 1,-1,-1,
-		-1, 1, 1,
-		 1,-1, 1,
-		 1, 1,-1,
-		 1, 1, 1
-	};
-
-	static const GLubyte cubeIndices[3*12] = {
-		0,1,2, 4,1,2, //left panel
-		7,5,6, 3,5,6, //right panel
-		0,1,3, 5,1,3, //bottom panel
-		0,2,6, 0,3,6, //back panel
-		2,6,7, 2,4,7, //top
-		4,7,5, 4,1,5  // front
-	};
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, cubeVertices);
-	
-	GLenum mode = GL_TRIANGLES;
-	
-	// draw a cube
-    glColor3f(0.0f,0.0f,1.0f);
-	glDrawElements(mode, 6, GL_UNSIGNED_BYTE, cubeIndices);
-	glColor3f(1.0f,0.0f,0.0f);
-	glDrawElements(mode, 6, GL_UNSIGNED_BYTE, cubeIndices+6);
-	glColor3f(0.0f,1.0f,0.0f);
-	glDrawElements(mode, 6, GL_UNSIGNED_BYTE, cubeIndices+12);
-	glColor3f(1.0f,1.0f,0.0f);
-	glDrawElements(mode, 6, GL_UNSIGNED_BYTE, cubeIndices+18);
-	glColor3f(0.0f,1.0f,1.0f);
-	glDrawElements(mode, 6, GL_UNSIGNED_BYTE, cubeIndices+24);
-	glColor3f(1.0f,0.0f,1.0f);
-	glDrawElements(mode, 6, GL_UNSIGNED_BYTE, cubeIndices+30);
-
-	// deactivate vertex arrays after drawing
-	glDisableClientState(GL_VERTEX_ARRAY);
-}
- 
-void displayCube(void)
-{
-    /* Clear all pixels */
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity();
-
-    gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
-    //gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-
-    glRotated(theta * 180.0/M_PI, upX, upY, upZ);
-    glRotated(phi * 180.0/M_PI, 1.0, 0.0, 0.0);
-	
-    //drawCube();
-
-	glmDraw(obj, GLM_SMOOTH | GLM_COLOR);
-	
-	
-	//VBOcruft();
-
-    glutSwapBuffers();
-}
-
-void reshapeCube(int w, int h)
-{
-    glViewport(0,0, (GLsizei) w, (GLsizei) h);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(fovy,(GLdouble)w/(GLdouble)h,1.5,20.0);
-    glMatrixMode(GL_MODELVIEW);
-}
-
-/*
- * Sphere-drawing
- */
-const int SPHERE_N = 20;
+GLfloat cubeVertices[8*3] = {1,1,1, -1,1,1, -1,-1,1,  1,-1,1, 1,-1,-1,  1,1,-1,  -1,1,-1,  -1,-1,-1};
+GLubyte cubeIndices[4*6] = {
+    0,1,2,3,
+    0,3,4,5,
+    0,5,6,1,
+    1,6,7,2,
+    7,4,3,2,
+    4,7,6,5
+};
 
 void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfloat ks, GLfloat n)
 {
@@ -247,126 +75,203 @@ void setGlMaterial(GLfloat r, GLfloat g, GLfloat b, GLfloat ka, GLfloat kd, GLfl
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, n);
 }
 
-void drawSpheres(void){
-    const static GLfloat lightPos[] = {-200.0, 600.0, 1500.0, 1.0};
-    const static GLfloat lightAmbient[] = {1.0, 1.0, 1.0, 1.0};
-    
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, lightAmbient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightAmbient);
-
-    setGlMaterial(0.0f,0.0f,1.0f,0.2,0.7,0.5,64);
-    glPushMatrix();
-    glTranslated(90,320,100);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
-
-    setGlMaterial(0.0f,1.0f,0.0f,0.2,0.3,0.5,8);
-    glPushMatrix();
-    glTranslated(210,270,300);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
-
-    setGlMaterial(1.0f,0.0f,0.0f,0.2,0.7,0.8,32);
-    glPushMatrix();
-    glTranslated(290,170,150);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
-
-    setGlMaterial(1.0f,0.8f,0.0f,0.2,0.8,0.0,1);
-    glPushMatrix();
-    glTranslated(140,220,400);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
-
-    setGlMaterial(1.0f,0.5f,0.0f,0.2,0.8,0.5,32);
-    glPushMatrix();
-    glTranslated(110,130,200);
-    glutSolidSphere(50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
-}
-
-void rePerspectifySphere(){
-	glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(fovy, (GLdouble)width/(GLdouble)height, 200, 10000);
-    glMatrixMode(GL_MODELVIEW);
-}
-
-void displaySphere(void)
+void displayTextureBalls(void)
 {
-		rePerspectifySphere();
-	
-    /* Clear all pixels */
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+    glBindTexture(GL_TEXTURE_2D,myTexture);
+
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    
-    double c = vogelRadius / sqrt(apertureSamples);
-        
-	for(int i = 0;i < apertureSamples; i++){
-		
-		double vogelTheta = i * GOLDEN_ANGLE;
-		double r = c * sqrt(i); 
-		/*ugly hack, sould not be necessary, but it works*/
-		glLoadIdentity();
-     
-		//gluLookAt(200.0, 200.0, 1000.0, 200.0, 200.0, 200.0, 0.0, 1.0, 0.0);
-		gluLookAt(eyeX+sin(vogelTheta)*r, eyeY+cos(vogelTheta)*r, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
-		
-		glTranslated(eyeX, eyeY, eyeZ);
-		glRotated(theta * 180.0/M_PI, upX, upY, upZ);
-		glRotated(phi * 180.0/M_PI, 1.0, 0.0, 0.0);
-		glTranslated(-eyeX, -eyeY, -eyeZ);
-	
-		drawSpheres();
-		glAccum(i ? GL_ACCUM : GL_LOAD, 1.0 / apertureSamples);
-		glFlush();
-	}
+    gluLookAt(200.0,200.0,1000.0,200.0,200.0,0.0,0.0,1.0,0.0);
 
-	glAccum(GL_RETURN, 1);
+    glTranslatef(0, 0, -camera_distance);
+    glRotatef(camera_angle_x, 1, 0, 0); 
+    glRotatef(camera_angle_y, 0, 1, 0);   
 
+    //setGlMaterial(0.0f,0.0f,1.0f,0.2,0.7,0.5,64);
+    glPushMatrix();
+    glTranslated(90,yOrbit,100);
+    glRotatef(xRotated,1.0,0.0,0.0);
+    glRotatef(yRotated,0.0,1.0,0.0);
+    glRotatef(zRotated,0.0,0.0,1.0);
+    gluSphere(quadric, 50,SPHERE_N,SPHERE_N);
+    glPopMatrix();
+
+    //setGlMaterial(0.0f,1.0f,0.0f,0.2,0.3,0.5,8);
+    glPushMatrix();
+    glTranslated(xOrbit,270,300);
+    glRotatef(xRotated,1.0,0.0,0.0);
+    glRotatef(yRotated,0.0,1.0,0.0);
+    glRotatef(zRotated,0.0,0.0,1.0);
+    gluSphere(quadric, 50,SPHERE_N,SPHERE_N);
+    glPopMatrix();
+
+    //setGlMaterial(1.0f,0.0f,0.0f,0.2,0.7,0.8,32);
+    glPushMatrix();
+    glTranslated(290,170,zOrbit);
+    glRotatef(xRotated,1.0,0.0,0.0);
+    glRotatef(yRotated,0.0,1.0,0.0);
+    glRotatef(zRotated,0.0,0.0,1.0);
+    gluSphere(quadric, 50,SPHERE_N,SPHERE_N);
+    glPopMatrix();
+
+    //setGlMaterial(1.0f,0.5f,0.0f,0.2,0.8,0.5,32);
+    glPushMatrix();
+    glTranslated(xOrbit,yOrbit,zOrbit); // 110, 130, 200
+    gluSphere(quadric, 50,SPHERE_N,SPHERE_N);
+    glPopMatrix();
+
+    glDisable(GL_TEXTURE_2D);
     glutSwapBuffers();
 }
 
-void reshapeSphere(int w, int h)
+
+void idle(void)
+{
+    xRotated += 0.05;
+    yRotated += 0.05;
+    zRotated += 0.05;
+    
+    
+    if(downwards) {
+        yOrbit--;
+        if(yOrbit <= 0) downwards = 0;
+    } else {
+        yOrbit++;
+        if(yOrbit >= 400) downwards = 1;
+    }
+     
+    if(leftwards){
+        xOrbit--;
+        if(xOrbit <= 0) leftwards = 0;
+    } else {
+        xOrbit++;
+        if(xOrbit >= 400) leftwards = 1;
+    }
+    
+    if(forwards){
+        zOrbit--;
+        if(zOrbit <= 0) forwards = 0;
+    } else {
+        zOrbit++;
+        if(zOrbit >= 400) forwards = 1;
+    }
+     
+     
+    displayTextureBalls();
+}
+void reshapeTextureBalls	(int w, int h)
 {
     glViewport(0,0, (GLsizei) w, (GLsizei) h);
-    width = w;
-    height = h;
-    fovy = 2.0*atan2(height/2.0,1000.0)*180.0/M_PI;
-    rePerspectifySphere();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(2.0*atan2(h/2.0,1000.0)*180.0/M_PI,(GLdouble)w/(GLdouble)h,500,1000);
+    glMatrixMode(GL_MODELVIEW);
+}
+void initTextureBalls(){
+    glutDisplayFunc(displayTextureBalls);
+    glutReshapeFunc(reshapeTextureBalls);
+    glutIdleFunc(idle);
+}
+
+void initLights()
+{
+    GLfloat light_position[] = {-1000.0, 600.0, 400.0, 0.0};
+    GLfloat light_asd[] = {1.0, 1.0, 1.0, 1.0};
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_asd);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_asd);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_asd);
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+}
+
+void mouse(int button, int state, int x, int y)
+{
+    mouse_x = x;
+    mouse_y = y;
+
+    if(button == GLUT_LEFT_BUTTON)
+    {
+        if(state == GLUT_DOWN)
+            mouse_left_down = 1;
+        else if(state == GLUT_UP)
+            mouse_left_down = 0;
+    }
+
+    else if(button == GLUT_RIGHT_BUTTON)
+    {
+        if(state == GLUT_DOWN)
+            mouse_right_down = 1;
+        else if(state == GLUT_UP)
+            mouse_right_down = 0;
+    }
+}
+
+
+void mouseMotion(int x, int y)
+{
+    if(mouse_left_down)
+    {
+        camera_angle_y += (x - mouse_x);
+        camera_angle_x += (y - mouse_y);
+        mouse_x = x;
+        mouse_y = y;
+    }
+    if(mouse_right_down)
+    {
+        camera_distance -= (y - mouse_y) * 0.2f;
+        mouse_y = y;
+    }
+    glutPostRedisplay();
+}
+
+
+void keyboard(unsigned char key, int x, int y)
+{
+    switch (key) {
+        case 'q':
+        case 'Q':
+        case 27: // ESC key
+            printf("Exiting...\n");
+            exit(0);
+            break;
+    }
 }
 
 
 
-/*
- * Initializations
- */
-void initCube(){
-	eyeX = 0.0, eyeY = 0.0, eyeZ = 5.0,
-	centerX = 0.0, centerY = 0.0, centerZ = 0.0,
-	upX = 0.0, upY = 1.0, upZ = 0.0, fovy = 60.0;
-	
-	obj = glmReadOBJ("obj/devilduk.obj");
-	glmScale(obj, 2);
-	glmFacetNormals(obj);
-	glmVertexNormals(obj, 90);
-	
-	glutDisplayFunc(displayCube);
-    glutReshapeFunc(reshapeCube);
-}
+GLuint initTexture(char* filename) { 
 
-void initSphere(){ 
-	eyeX = 200.0, eyeY = 200.0, eyeZ = 1000.0,
-	centerX = 200.0, centerY = 200.0, centerZ = 200.0,
-	upX = 0.0, upY = 1.0, upZ = 0.0, 
-	fovy = 2.0*atan2(height/2.0,1000.0)*180.0/M_PI;
-	
-	glutDisplayFunc(displaySphere);
-    glutReshapeFunc(reshapeSphere);
-}
+   unsigned char* buffer;
+   unsigned char* image;
+   size_t buffersize, imagesize;
+   GLuint texName;
+   LodePNG_Decoder decoder;
 
+   LodePNG_loadFile(&buffer, &buffersize, filename);
+   LodePNG_Decoder_init(&decoder);
+   decoder.infoRaw.color.colorType = 6; /* Load image as RGBA */
+   LodePNG_decode(&decoder, &image, &imagesize, buffer, buffersize);
+   if(decoder.error) {
+      printf("Error reading in png image: %d\n", decoder.error);
+      exit(1);      
+   } else {
+      glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+      glGenTextures(1,&texName);
+      glBindTexture(GL_TEXTURE_2D,texName);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+      glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,decoder.infoPng.width,
+         decoder.infoPng.height,0,GL_RGBA,GL_UNSIGNED_BYTE,image);
+   } 
+   return texName;
+
+}
 
 int main(int argc, char** argv)
 {
@@ -374,9 +279,10 @@ int main(int argc, char** argv)
     GLenum err;
 #endif
 
+
     glutInit(&argc,argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_ACCUM);
-    glutInitWindowSize(800,600);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitWindowSize(400,400);
     glutInitWindowPosition(220,100);
     glutCreateWindow("Computer Graphics - OpenGL framework");
 
@@ -391,22 +297,33 @@ int main(int argc, char** argv)
     fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 #endif
 
+    initLights();
+initGLSLProgram("vertexshader.glsl","fragmentshader.glsl");    
+//initGLSLProgram("vertexshader.glsl","fragmentshader.glsl");
+    quadric = gluNewQuadric();
+    myTexture = initTexture("earth.png");
+
+    gluQuadricDrawStyle(quadric, GLU_FILL);
+    gluQuadricOrientation(quadric, GLU_OUTSIDE);
+    gluQuadricNormals(quadric, GLU_SMOOTH);
+    gluQuadricTexture(quadric, GL_TRUE);
+    
     /* Select clearing (background) color */
     glClearColor(0.0,0.0,0.0,0.0);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	initGLSLProgram("vertexshader.glsl","goochfragment.glsl");
+
+
 
     /* Register GLUT callback functions */
     glutKeyboardFunc(keyboard);
-	glutSpecialFunc(specialKeyboard);
-	glutMotionFunc(motion);
-	glutMouseFunc(mouse);
-	
-	initSphere();
-
+    glutMouseFunc(mouse);
+    glutMotionFunc(mouseMotion);
+    
+    initTextureBalls();
+    //initObject();
+    //initSphere();
+    //initCube();
     glutMainLoop();
 
     return 0;
