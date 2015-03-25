@@ -91,13 +91,14 @@ void displayTextureBalls(void)
 
   //setGlMaterial(0.0f,1.0f,0.0f,0.2,0.3,0.5,8);
 
-    //      glBindTexture(GL_TEXTURE_2D,venus);
+          glBindTexture(GL_TEXTURE_2D,venus);
 
     
        glPushMatrix();
-    glRotatef(9*orbit,210,270,300);
+       glRotatef(90*orbit,210,270,300);
     glTranslated(-270,210,100);
 
+    glRotatef(1000*rotation,1,1,0.6);
     gluSphere(quadric,50,SPHERE_N,SPHERE_N);
     glPopMatrix();
 
@@ -106,7 +107,10 @@ void displayTextureBalls(void)
 
        glPushMatrix();
 
-    glRotatef(-orbit,290,170,150);
+          glBindTexture(GL_TEXTURE_2D,mars);
+
+       
+    glRotatef(-500*orbit,290,170,150);
     glTranslated(-90,150,170);
 
     gluSphere(quadric,50,SPHERE_N,SPHERE_N);
@@ -114,14 +118,14 @@ void displayTextureBalls(void)
 
   //setGlMaterial(1.0f,0.5f,0.0f,0.2,0.8,0.5,32);
 
-     glPushMatrix();
-    glRotatef(5*orbit,140,220,400);
-    glTranslated(-140,400,220);
+    /*  glPushMatrix(); */
+    /* glRotatef(5*orbit,140,220,400); */
+    /* glTranslated(-140,400,220); */
 
     
     
-    gluSphere(quadric,50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
+    /* gluSphere(quadric,50,SPHERE_N,SPHERE_N); */
+    /* glPopMatrix(); */
 
        glDisable(GL_TEXTURE_2D);     
     glPushMatrix();
@@ -164,6 +168,9 @@ void initLights()
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
 }
+
+
+
 void mouse(int button, int state, int x, int y)
 {
   mouse_x = x;
@@ -261,8 +268,8 @@ int main(int argc, char** argv)
   //initGLSLProgram("vertexshader.glsl","goochshader.glsl");
   quadric = gluNewQuadric();
   earth = initTexture("earth.png");
-  //venus = initTexture("venus.png");
-  //mars = initTexture("earth.jpg");
+  venus = initTexture("venus.png");
+  mars = initTexture("mars.png");
   gluQuadricDrawStyle(quadric, GLU_FILL);
   gluQuadricOrientation(quadric, GLU_OUTSIDE);
   gluQuadricNormals(quadric, GLU_SMOOTH);
