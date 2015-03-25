@@ -40,10 +40,9 @@ float mouse_y = 0;
 float camera_angle_y = 0.0f;
 float camera_angle_x = 0.0f;
 float camera_distance = 10.0f;
-GLfloat xRotated = 0, yRotated = 0 , zRotated = 0;
-GLint xOrbit = 210, yOrbit = 320, zOrbit = 150;
+GLfloat orbit = 0, rotation = 0;;
 GLUquadric* quadric;
-GLuint myTexture;
+GLuint earth, venus, mars;
 GLfloat cubeVertices[8*3] = {1,1,1, -1,1,1, -1,-1,1, 1,-1,1, 1,-1,-1, 1,1,-1, -1,1,-1, -1,-1,-1};
 GLubyte cubeIndices[4*6] = {
   0,1,2,3,
@@ -67,7 +66,7 @@ void displayTextureBalls(void)
 {
   glEnable(GL_TEXTURE_2D);
   glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-  glBindTexture(GL_TEXTURE_2D,myTexture);
+  glBindTexture(GL_TEXTURE_2D,earth);
   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
   gluLookAt(200.0,200.0,1000.0,200.0,200.0,0.0,0.0,1.0,0.0);
@@ -77,16 +76,26 @@ void displayTextureBalls(void)
   //setGlMaterial(0.0f,0.0f,1.0f,0.2,0.7,0.5,64);
 
     glPushMatrix();
-    glRotatef(100*yRotated,320,-90,100);
-    glTranslated(90,320,100);
+    //glRotatef(orbit/2,320,-90,100);
+    
+    glTranslated(120*sin(orbit),0,100*cos(orbit));
+
+    glRotatef(-40*rotation,-1,1,0);
+
+    glRotated(90,1,0,0);
+    glRotated(45,0,1,0);
+    
 
     gluSphere(quadric,50,SPHERE_N,SPHERE_N);
     glPopMatrix();
 
   //setGlMaterial(0.0f,1.0f,0.0f,0.2,0.3,0.5,8);
 
+    //      glBindTexture(GL_TEXTURE_2D,venus);
+
+    
        glPushMatrix();
-    glRotatef(90*yRotated,210,270,300);
+    glRotatef(9*orbit,210,270,300);
     glTranslated(-270,210,100);
 
     gluSphere(quadric,50,SPHERE_N,SPHERE_N);
@@ -97,7 +106,7 @@ void displayTextureBalls(void)
 
        glPushMatrix();
 
-    glRotatef(-110*yRotated,290,170,150);
+    glRotatef(-orbit,290,170,150);
     glTranslated(-90,150,170);
 
     gluSphere(quadric,50,SPHERE_N,SPHERE_N);
@@ -106,7 +115,7 @@ void displayTextureBalls(void)
   //setGlMaterial(1.0f,0.5f,0.0f,0.2,0.8,0.5,32);
 
      glPushMatrix();
-    glRotatef(50*yRotated,140,220,400);
+    glRotatef(5*orbit,140,220,400);
     glTranslated(-140,400,220);
 
     
@@ -114,20 +123,21 @@ void displayTextureBalls(void)
     gluSphere(quadric,50,SPHERE_N,SPHERE_N);
     glPopMatrix();
 
-     
-    //setGlMaterial(1.0f,1.0f,0.0f,0.2,0.8,0.5,100);
+       glDisable(GL_TEXTURE_2D);     
     glPushMatrix();
+    setGlMaterial(1.0f,1.0f,0.0f,0.2,0.8,0.5,100);
     gluSphere(quadric,50,SPHERE_N,SPHERE_N);
     glPopMatrix();
-       glDisable(GL_TEXTURE_2D);
 
+        setGlMaterial(1.0f,1.0f,1.0f,0.2,0.8,0.5,100);
+
+    
   glutSwapBuffers();
 }
 void idle(void)
 {
-  xRotated += 0.05;
-  yRotated += 0.05;
-  zRotated += 0.05;
+  orbit =  (orbit > M_PI) ? -(M_PI) : orbit + 0.01;
+  rotation += 0.05;
   displayTextureBalls();
 }
 void reshapeTextureBalls	(int w, int h)
@@ -145,7 +155,7 @@ void initTextureBalls(){
 }
 void initLights()
 {
-  GLfloat light_position[] = {-1000.0, 600.0, 400.0, 0.0};
+  GLfloat light_position[] = {-1000.0, 400.0, 0.0, 0.0};
   GLfloat light_asd[] = {1.0, 1.0, 1.0, 1.0};
   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
   glLightfv(GL_LIGHT0, GL_AMBIENT, light_asd);
@@ -250,7 +260,9 @@ int main(int argc, char** argv)
   initGLSLProgram("vertexshader.glsl","fragmentshader.glsl");
   //initGLSLProgram("vertexshader.glsl","goochshader.glsl");
   quadric = gluNewQuadric();
-  myTexture = initTexture("earth.png");
+  earth = initTexture("earth.png");
+  //venus = initTexture("venus.png");
+  //mars = initTexture("earth.jpg");
   gluQuadricDrawStyle(quadric, GLU_FILL);
   gluQuadricOrientation(quadric, GLU_OUTSIDE);
   gluQuadricNormals(quadric, GLU_SMOOTH);
