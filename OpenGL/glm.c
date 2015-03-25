@@ -11,7 +11,7 @@
 
  */
 
-#define GL_GLEXT_PROTOTYPES
+#define GL_GLEXT_PROTOTYPES // Ignores warnings of buffers?
 
 #include <math.h>
 #include <stdio.h>
@@ -19,13 +19,9 @@
 #include <string.h>
 #include <assert.h>
 #include "glm.h"
-#include <GL/glext.h>
-
 
 #define T(x) (model->triangles[(x)])
 
-
-  GLuint triangleVBO;
 
 /* _GLMnode: general purpose node
  */
@@ -1588,8 +1584,6 @@ glmDraw(GLMmodel* model, GLuint mode)
   static GLMtriangle* triangle;
   static GLMmaterial* material;
 
-
-
   assert(model);
   assert(model->vertices);
 
@@ -1639,91 +1633,150 @@ glmDraw(GLMmodel* model, GLuint mode)
      schemes (and these branches will always go one way), probably
      wouldn't gain too much?  */
 
-  //Vertices of a triangle (counter-clockwise winding)
-  //float data[] = {1.0, 0.0, 1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 1.0};
-  //try float data[] = {0.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, -1.0, 0.0}; if the above doesn't work.
-	 
-  //Create a new VBO and use the variable id to store the VBO id
-  glGenBuffers(1, &triangleVBO);
-	 
-  //Make the new VBO active
-  glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
-	 
-  //Upload vertex data to the video device
-  glBufferData(GL_ARRAY_BUFFER, model->numvertices*sizeof(*model->vertices)*3, model->vertices, GL_STATIC_DRAW);
-	 
-  //Make the new VBO active. Repeat here incase changed since initialisation
-  glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
-
-
-  if (mode & GLM_MATERIAL) {
-    material = &model->materials[group->material];
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, material->ambient);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, material->diffuse);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, material->specular);
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, material->shininess);
-  }
-
-
-  //group = model->groups;
-  
-  //while(group){
-
-
-    if (mode & GLM_COLOR) {
-      //material = &model->materials[group->material];
-      //glColor3fv(material->diffuse);
+  group = model->groups;
+  while (group) {
+    if (mode & GLM_MATERIAL) {
+      material = &model->materials[group->material];
+      glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, material->ambient);
+      glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, material->diffuse);
+      glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, material->specular);
+      glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, material->shininess);
     }
 
-	 
-    //Draw Triangle from VBO - do each time window, view point or data changes
-    //Establish its 3 coordinates per vertex with zero stride in this array; necessary here
-    glVertexPointer(3, GL_FLOAT, 0, NULL);
-	 
-    //Establish array contains vertices (not normals, colours, texture coords etc)
-    glEnableClientState(GL_VERTEX_ARRAY);
-	 
-    //Actually draw the triangle, giving the number of vertices provided
-    glDrawArrays(GL_TRIANGLES, 0, model->numvertices);
-	 
-    //Force display to be drawn now
-    glFlush();
-
-    //group = group->next;
-
-    //}
-  /*while (group) {
+    if (mode & GLM_COLOR) {
+      material = &model->materials[group->material];
+      glColor3fv(material->diffuse);
+    }
 
     glBegin(GL_TRIANGLES);
     for (i = 0; i < group->numtriangles; i++) {
-    triangle = &T(group->triangles[i]);
+      triangle = &T(group->triangles[i]);
 
-    if (mode & GLM_FLAT)
-    glNormal3fv(&model->facetnorms[3 * triangle->findex]);
+      if (mode & GLM_FLAT)
+	glNormal3fv(&model->facetnorms[3 * triangle->findex]);
       
-    if (mode & GLM_SMOOTH)
-    glNormal3fv(&model->normals[3 * triangle->nindices[0]]);
-    if (mode & GLM_TEXTURE)
-    glTexCoord2fv(&model->texcoords[2 * triangle->tindices[0]]);
-    glVertex3fv(&model->vertices[3 * triangle->vindices[0]]);
+      if (mode & GLM_SMOOTH)
+	glNormal3fv(&model->normals[3 * triangle->nindices[0]]);
+      if (mode & GLM_TEXTURE)
+	glTexCoord2fv(&model->texcoords[2 * triangle->tindices[0]]);
+      glVertex3fv(&model->vertices[3 * triangle->vindices[0]]);
       
-    if (mode & GLM_SMOOTH)
-    glNormal3fv(&model->normals[3 * triangle->nindices[1]]);
-    if (mode & GLM_TEXTURE)
-    glTexCoord2fv(&model->texcoords[2 * triangle->tindices[1]]);
-    glVertex3fv(&model->vertices[3 * triangle->vindices[1]]);
+      if (mode & GLM_SMOOTH)
+	glNormal3fv(&model->normals[3 * triangle->nindices[1]]);
+      if (mode & GLM_TEXTURE)
+	glTexCoord2fv(&model->texcoords[2 * triangle->tindices[1]]);
+      glVertex3fv(&model->vertices[3 * triangle->vindices[1]]);
       
-    if (mode & GLM_SMOOTH)
-    glNormal3fv(&model->normals[3 * triangle->nindices[2]]);
-    if (mode & GLM_TEXTURE)
-    glTexCoord2fv(&model->texcoords[2 * triangle->tindices[2]]);
-    glVertex3fv(&model->vertices[3 * triangle->vindices[2]]);
+      if (mode & GLM_SMOOTH)
+	glNormal3fv(&model->normals[3 * triangle->nindices[2]]);
+      if (mode & GLM_TEXTURE)
+	glTexCoord2fv(&model->texcoords[2 * triangle->tindices[2]]);
+      glVertex3fv(&model->vertices[3 * triangle->vindices[2]]);
       
     }
     glEnd();
 
-  */
+    group = group->next;
+  }
+}
 
+GLMVBOmodel* glmInitVBO(GLMmodel *model)
+{
+  GLMtriangle *triangle;
+  GLMgroup *group;
+  GLMVBOmodel *vbo_model;
+
+  unsigned int i, v = 0, w = 0;
+
+  vbo_model = (GLMVBOmodel*) malloc(sizeof(GLMVBOmodel));
+  vbo_model->num_triangles = 0;
+  
+  //Create buffers
+  glGenBuffersARB(1, &vbo_model->vertexbuffer);
+  glGenBuffersARB(1, &vbo_model->normalbuffer);
+  glGenBuffersARB(1, &vbo_model->colorbuffer);
+
+  group = model->groups;
+  while (group) {
+    vbo_model->num_triangles += group->numtriangles;
+    group = group->next;
+  }
+
+  GLfloat* vertices = (GLfloat*) malloc(sizeof(GLfloat) * vbo_model->num_triangles * 3 * 3);
+  GLfloat* normals = (GLfloat*) malloc(sizeof(GLfloat) * vbo_model->num_triangles * 3 * 3);
+  GLfloat* colors = (GLfloat*) malloc(sizeof(GLfloat) * vbo_model->num_triangles * 3 * 4);
+
+  group = model->groups;
+  while (group) {
+    GLMmaterial *material = &model->materials[group->material];
+
+    // Fill the buffers
+    for (i = 0; i < group->numtriangles; i++, v += 9, w += 12) {
+      triangle = &model->triangles[group->triangles[i]];
+      assert(v + 9 <= vbo_model->num_triangles * 3 * 3);
+
+      memcpy(&vertices[v+0], &model->vertices[3*triangle->vindices[0]], 3*sizeof(GLfloat));
+      memcpy(&vertices[v+3], &model->vertices[3*triangle->vindices[1]], 3*sizeof(GLfloat));
+      memcpy(&vertices[v+6], &model->vertices[3*triangle->vindices[2]], 3*sizeof(GLfloat));
+    
+      memcpy(&normals[v+0], &model->normals[3*triangle->nindices[0]], 3*sizeof(GLfloat));
+      memcpy(&normals[v+3], &model->normals[3*triangle->nindices[1]], 3*sizeof(GLfloat));
+      memcpy(&normals[v+6], &model->normals[3*triangle->nindices[2]], 3*sizeof(GLfloat));
+
+      memcpy(&colors[w + 0], material->diffuse, 4 * sizeof(GLfloat));
+      memcpy(&colors[w + 4], material->diffuse, 4 * sizeof(GLfloat));
+      memcpy(&colors[w + 8], material->diffuse, 4 * sizeof(GLfloat));
+    }
+    group = group->next;
+  }
+
+  // Set buffers
+  glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_model->vertexbuffer);
+  glBufferDataARB(GL_ARRAY_BUFFER_ARB,
+    3 * 3 * sizeof(GLfloat) * vbo_model->num_triangles,
+    vertices,
+    GL_STATIC_DRAW);
+  
+  glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_model->normalbuffer);
+  glBufferDataARB(GL_ARRAY_BUFFER_ARB,
+    3 * 3 * sizeof(GLfloat) * vbo_model->num_triangles,
+    normals,
+    GL_STATIC_DRAW);
+
+  // Color isn't set?
+  glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_model->colorbuffer);
+  glBufferDataARB(GL_ARRAY_BUFFER_ARB,
+    3 * 4 * sizeof(GLfloat) * vbo_model->num_triangles,
+    colors,
+    GL_STATIC_DRAW);
+
+  free(vertices);
+  free(normals);
+  free(colors);
+
+  return vbo_model;
+}
+
+GLvoid glmDrawVBO(GLMVBOmodel* vbo_model)
+{
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glEnableClientState(GL_NORMAL_ARRAY);
+  glEnableClientState(GL_COLOR_ARRAY);
+
+  glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_model->normalbuffer);
+  glNormalPointer(GL_FLOAT, 0, 0);
+
+  glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_model->vertexbuffer);
+  glVertexPointer(3, GL_FLOAT, 0, 0);
+
+  glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo_model->colorbuffer);
+  glColorPointer(4, GL_FLOAT, 0, 0);
+
+  glDrawArrays(GL_TRIANGLES, 0, vbo_model->num_triangles * 3);
+
+  glDisableClientState(GL_COLOR_ARRAY);
+  glDisableClientState(GL_NORMAL_ARRAY);
+  glDisableClientState(GL_VERTEX_ARRAY);
 }
 
 /* glmList: Generates and returns a display list for the model using

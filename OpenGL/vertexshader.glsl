@@ -1,14 +1,13 @@
 #version 120
-varying vec3 N, L, E;
 
-void main()
-{	
-	N = normalize(gl_NormalMatrix * gl_Normal);
+varying vec3 N;
+varying vec4 v, E;
 
-	vec3 v = normalize(vec3(gl_ModelViewMatrix * gl_Vertex));
-	
-	L = vec3(gl_LightSource[0].position.xyz - v);
-	E = normalize(-v);
+void main(void)
+{
+    v = normalize(gl_ModelViewMatrix * gl_Vertex);
+    E = normalize(-v);
+    N = normalize(gl_NormalMatrix * gl_Normal);
 
-	gl_Position = ftransform();		
+	gl_Position = ftransform();
 }

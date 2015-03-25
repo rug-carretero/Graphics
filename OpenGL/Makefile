@@ -1,5 +1,5 @@
 # GNU (everywhere)
-CC = gcc -g -Wall -Wno-format -pedantic -std=gnu99
+CC = gcc -g -Wall 
 
 # GNU (faster)
 #CPP = gcc -O5 -Wall -fomit-frame-pointer -ffast-math 
@@ -7,7 +7,7 @@ CC = gcc -g -Wall -Wno-format -pedantic -std=gnu99
 UNAME=$(shell uname)
 
 EXECUTABLE = openglframework
-OBJS = openglframework.o glslshaders.o glm.o
+OBJS = openglframework.o glslshaders.o glm.o lodepng.o
 
 ifeq ($(UNAME),Darwin)
 	LIBS = -lm -framework OpenGL -framework GLUT
@@ -15,7 +15,7 @@ else
 	ifeq ($(findstring MINGW,$(UNAME)),MINGW)
 		CC += -Iincludes -DNEED_GLEW -DGLEW_STATIC # You might need glew on MingW
 		OBJS += glew.o
-		LIBS = -lm -lopengl32 -lglu32 -lfreeglut
+		LIBS = -lm -lopengl32 -lglu32 -Llibs -lfreeglut
 	else
 		LIBS = -lm -lGL -lglut -lGLU
 	endif

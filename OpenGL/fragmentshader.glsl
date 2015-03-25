@@ -1,27 +1,23 @@
-#version 120
-varying vec3 N, L, E;
+varying vec3 N;
+varying vec3 v;
 
-void main (void)
+void main()
 {
-	vec4 final_color = 
-		(gl_FrontLightModelProduct.sceneColor * gl_FrontMaterial.ambient) + 
-		(gl_LightSource[0].ambient * gl_FrontMaterial.ambient);
-	
-	float R0 = dot(N,L);
-	
-	if(R0 > 0.0)
-	{
-		final_color += gl_LightSource[0].diffuse * 
-			gl_FrontMaterial.diffuse * R0;	
-		
-		vec3 R = reflect(-L, N);
-		
-		float specular = pow(max(dot(R, E), 0.0), 
-			gl_FrontMaterial.shininess);
-			
-		final_color += gl_LightSource[0].specular * 
-			gl_FrontMaterial.specular * specular;	
-	}
+	vec3 L = normalize(gl_LightSource[0].position.xyz - v);
+    vec3 E = normalize(-v);
+    vec3 R = normalize(-reflect(L,N));
+    vec4 color = gl_FrontLightModelProduct.sceneColor;
 
-	gl_FragColor = final_color;			
+    color += gl_FrontLightProduct[0].ambient;
+    float angle = dot(N,L);
+
+    if (angle > 0.0)
+        color += gl_FrontLightProduct[0].diffuse * angle;
+    
+    float light_angle = dot(R,E);
+
+    if (light_angle > 0.0)
+        color += gl_FrontLightProduct[0].specular * pow(light_angle, gl_FrontMaterial.shininess);
+    
+    gl_FragColor = color;
 }
