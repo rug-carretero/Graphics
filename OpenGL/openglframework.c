@@ -75,65 +75,64 @@ void displayTextureBalls(void)
   glRotatef(camera_angle_y, 0, 1, 0);
   //setGlMaterial(0.0f,0.0f,1.0f,0.2,0.7,0.5,64);
 
-    glPushMatrix();
-    //glRotatef(orbit/2,320,-90,100);
+  glPushMatrix();
+  //tilt entire orbit
+  glRotated(40,0,0,1);
+  //translate into orbit over y,z coords  
+  glTranslated(120*sin(orbit),0,100*cos(orbit));
+  //turn upward, tilt slightly
+  glRotated(90,1,0,0);
+  glRotated(15,0,1,0);
+  //earth spin
+  glRotated(-40*rotation,0,0,1);
     
-    glTranslated(120*sin(orbit),0,100*cos(orbit));
 
-    glRotatef(-40*rotation,-1,1,0);
-
-    glRotated(90,1,0,0);
-    glRotated(45,0,1,0);
-    
-
-    gluSphere(quadric,50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
+  gluSphere(quadric,25,SPHERE_N,SPHERE_N);
+  glPopMatrix();
 
   //setGlMaterial(0.0f,1.0f,0.0f,0.2,0.3,0.5,8);
 
-          glBindTexture(GL_TEXTURE_2D,venus);
+  glBindTexture(GL_TEXTURE_2D,venus);
 
-    
-       glPushMatrix();
-       glRotatef(90*orbit,210,270,300);
-    glTranslated(-270,210,100);
 
-    glRotatef(1000*rotation,1,1,0.6);
-    gluSphere(quadric,50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
+glPushMatrix();
+  //tilt entire orbit
+  glRotated(-30,0,0,1);
+  //translate into orbit over y,z coords  
+  glTranslated(800*cos(orbit),0,200*sin(orbit));
+  //turn upward, tilt slightly
+  //glRotated(90,1,0,0);
+  glRotated(30,0,1,0);
+
+    //earth spin
+  glRotatef(1000*rotation,0,0,1);
+
+ 
+  gluSphere(quadric,80,SPHERE_N,SPHERE_N);
+  glPopMatrix();
 
     
   //setGlMaterial(1.0f,0.0f,0.0f,0.2,0.7,0.8,32);
 
-       glPushMatrix();
+  glPushMatrix();
 
-          glBindTexture(GL_TEXTURE_2D,mars);
+  glBindTexture(GL_TEXTURE_2D,mars);
 
        
-    glRotatef(-500*orbit,290,170,150);
-    glTranslated(-90,150,170);
+  glRotatef(-500*orbit,290,170,150);
+  glTranslated(-90,150,170);
 
-    gluSphere(quadric,50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
+  gluSphere(quadric,40,SPHERE_N,SPHERE_N);
+  glPopMatrix();
 
-  //setGlMaterial(1.0f,0.5f,0.0f,0.2,0.8,0.5,32);
-
-    /*  glPushMatrix(); */
-    /* glRotatef(5*orbit,140,220,400); */
-    /* glTranslated(-140,400,220); */
-
-    
-    
-    /* gluSphere(quadric,50,SPHERE_N,SPHERE_N); */
-    /* glPopMatrix(); */
-
-       glDisable(GL_TEXTURE_2D);     
-    glPushMatrix();
-    setGlMaterial(1.0f,1.0f,0.0f,0.2,0.8,0.5,100);
-    gluSphere(quadric,50,SPHERE_N,SPHERE_N);
-    glPopMatrix();
-
-        setGlMaterial(1.0f,1.0f,1.0f,0.2,0.8,0.5,100);
+  glDisable(GL_TEXTURE_2D);     
+  glPushMatrix();
+  //sun has no texture, just color
+  setGlMaterial(1.0f,1.0f,0.0f,0.2,0.8,0.5,100);
+  gluSphere(quadric,50,SPHERE_N,SPHERE_N);
+  glPopMatrix();
+  //reset color to get rid of yellow-ish planets
+  setGlMaterial(1.0f,1.0f,1.0f,0.2,0.8,0.5,100);
 
     
   glutSwapBuffers();
@@ -159,7 +158,7 @@ void initTextureBalls(){
 }
 void initLights()
 {
-  GLfloat light_position[] = {-1000.0, 400.0, 0.0, 0.0};
+  GLfloat light_position[] = {0.0, 50.0, 50.0, 0.0};
   GLfloat light_asd[] = {1.0, 1.0, 1.0, 1.0};
   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
   glLightfv(GL_LIGHT0, GL_AMBIENT, light_asd);
@@ -268,6 +267,9 @@ int main(int argc, char** argv)
   //initGLSLProgram("vertexshader.glsl","goochshader.glsl");
   quadric = gluNewQuadric();
   earth = initTexture("earth.png");
+  //load earth for testing (faster)
+  /* venus = initTexture("earth.png"); */
+  /* mars = initTexture("earth.png"); */
   venus = initTexture("venus.png");
   mars = initTexture("mars.png");
   gluQuadricDrawStyle(quadric, GLU_FILL);
